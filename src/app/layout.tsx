@@ -5,6 +5,7 @@ import "../styles/highlight.scss";
 import { getClientConfig } from "../config/client";
 import { type Metadata } from "next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/react";
 import { getServerSideConfig } from "../config/server";
 import { GoogleTagManager } from "@next/third-parties/google";
 const serverConfig = getServerSideConfig();
@@ -50,6 +51,11 @@ export default function RootLayout({
         {serverConfig?.gtmId && (
           <>
             <GoogleTagManager gtmId={serverConfig.gtmId} />
+          </>
+        )}
+        {serverConfig?.isVercel && (
+          <>
+            <Analytics />
           </>
         )}
       </body>

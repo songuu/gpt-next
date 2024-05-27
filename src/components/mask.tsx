@@ -1,3 +1,5 @@
+import { redirect, useRouter } from 'next/navigation'
+
 import { IconButton } from "./button";
 import { ErrorBoundary } from "./error";
 
@@ -34,7 +36,6 @@ import {
 } from "./ui-lib";
 import { Avatar, AvatarPicker } from "./emoji";
 import Locale, { AllLangs, ALL_LANG_OPTIONS, Lang } from "../locales";
-import { useNavigate } from "react-router-dom";
 
 import chatStyle from "./chat.module.scss";
 import { useEffect, useState } from "react";
@@ -80,6 +81,7 @@ export function MaskConfig(props: {
   readonly?: boolean;
   shouldSyncFromGlobal?: boolean;
 }) {
+  const router = useRouter()
   const [showPicker, setShowPicker] = useState(false);
 
   const updateConfig = (updater: (config: ModelConfig) => void) => {
@@ -399,8 +401,7 @@ export function ContextPrompts(props: {
 }
 
 export function MaskPage() {
-  const navigate = useNavigate();
-
+  const router = useRouter()
   const maskStore = useMaskStore();
   const chatStore = useChatStore();
 
@@ -461,7 +462,7 @@ export function MaskPage() {
         if (importMasks.name) {
           maskStore.create(importMasks);
         }
-      } catch {}
+      } catch { }
     });
   };
 
@@ -499,7 +500,7 @@ export function MaskPage() {
               <IconButton
                 icon={<CloseIcon />}
                 bordered
-                onClick={() => navigate(-1)}
+                onClick={() => router.back()}
               />
             </div>
           </div>
@@ -558,9 +559,8 @@ export function MaskPage() {
                   <div className={styles["mask-title"]}>
                     <div className={styles["mask-name"]}>{m.name}</div>
                     <div className={styles["mask-info"] + " one-line"}>
-                      {`${Locale.Mask.Item.Info(m.context.length)} / ${
-                        ALL_LANG_OPTIONS[m.lang]
-                      } / ${m.modelConfig.model}`}
+                      {`${Locale.Mask.Item.Info(m.context.length)} / ${ALL_LANG_OPTIONS[m.lang]
+                        } / ${m.modelConfig.model}`}
                     </div>
                   </div>
                 </div>
@@ -570,7 +570,7 @@ export function MaskPage() {
                     text={Locale.Mask.Item.Chat}
                     onClick={() => {
                       chatStore.newSession(m);
-                      navigate(Path.Chat);
+                      redirect(Path.Chat);
                     }}
                   />
                   {m.builtin ? (

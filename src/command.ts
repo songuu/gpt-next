@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "next/navigation";
 import Locale from "./locales";
 
 type Command = (param: string) => void;
@@ -12,21 +12,24 @@ interface Commands {
 }
 
 export function useCommand(commands: Commands = {}) {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     let shouldUpdate = false;
-    searchParams.forEach((param, name) => {
-      const commandName = name as keyof Commands;
+
+    const params = new URLSearchParams(searchParams.toString())
+
+    params.forEach((param, name) => {
+      const commandName = name as unknown as keyof Commands;
       if (typeof commands[commandName] === "function") {
         commands[commandName]!(param);
-        searchParams.delete(name);
+        params.delete(name)
         shouldUpdate = true;
       }
     });
 
     if (shouldUpdate) {
-      setSearchParams(searchParams);
+      window.history.pushState(null, '', `?${searchParams.toString()}`)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, commands]);

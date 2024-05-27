@@ -1,5 +1,9 @@
 import { useEffect, useRef, useMemo } from "react";
 
+import { redirect } from 'next/navigation'
+
+import { createClient } from "../utils/supabase/server";
+
 import styles from "./home.module.scss";
 
 import { IconButton } from "./button";
@@ -27,7 +31,6 @@ import {
 } from "../constant";
 
 import Link from "next/link";
-import { useNavigate } from "react-router-dom";
 import { isIOS, useMobileScreen } from "../utils";
 import dynamic from "next/dynamic";
 import { showConfirm, showToast } from "./ui-lib";
@@ -134,7 +137,6 @@ export function SideBar(props: { className?: string }) {
 
   // drag side bar
   const { onDragStart, shouldNarrow } = useDragSideBar();
-  const navigate = useNavigate();
   const config = useAppConfig();
   const isMobileScreen = useMobileScreen();
   const isIOSMobile = useMemo(
@@ -142,13 +144,28 @@ export function SideBar(props: { className?: string }) {
     [isMobileScreen],
   );
 
+
+  // const canInitSupabaseClient = () => {
+  //   "use server";
+  //   // This function is just for the interactive tutorial.
+  //   // Feel free to remove it once you have Supabase connected.
+  //   try {
+  //     createClient();
+  //     return true;
+  //   } catch (e) {
+  //     return false;
+  //   }
+  // };
+
+  // canInitSupabaseClient();
+
+
   useHotKey();
 
   return (
     <div
-      className={`${styles.sidebar} ${props.className} ${
-        shouldNarrow && styles["narrow-sidebar"]
-      }`}
+      className={`${styles.sidebar} ${props.className} ${shouldNarrow && styles["narrow-sidebar"]
+        }`}
       style={{
         // #3016 disable transition on ios mobile screen
         transition: isMobileScreen && isIOSMobile ? "none" : undefined,
@@ -173,9 +190,9 @@ export function SideBar(props: { className?: string }) {
           className={styles["sidebar-bar-button"]}
           onClick={() => {
             if (config.dontShowMaskSplashScreen !== true) {
-              navigate(Path.NewChat, { state: { fromHome: true } });
+              redirect(Path.NewChat);
             } else {
-              navigate(Path.Masks, { state: { fromHome: true } });
+              redirect(Path.Masks);
             }
           }}
           shadow
@@ -193,7 +210,7 @@ export function SideBar(props: { className?: string }) {
         className={styles["sidebar-body"]}
         onClick={(e) => {
           if (e.target === e.currentTarget) {
-            navigate(Path.Home);
+            redirect(Path.Home);
           }
         }}
       >
@@ -217,11 +234,11 @@ export function SideBar(props: { className?: string }) {
               <IconButton icon={<SettingsIcon />} shadow />
             </Link>
           </div>
-          <div className={styles["sidebar-action"]}>
+          {/* <div className={styles["sidebar-action"]}>
             <a href={REPO_URL} target="_blank" rel="noopener noreferrer">
               <IconButton icon={<GithubIcon />} shadow />
             </a>
-          </div>
+          </div> */}
         </div>
         <div>
           <IconButton
@@ -230,9 +247,9 @@ export function SideBar(props: { className?: string }) {
             onClick={() => {
               if (config.dontShowMaskSplashScreen) {
                 chatStore.newSession();
-                navigate(Path.Chat);
+                redirect(Path.Chat);
               } else {
-                navigate(Path.NewChat);
+                redirect(Path.NewChat);
               }
             }}
             shadow

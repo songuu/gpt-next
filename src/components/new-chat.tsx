@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { redirect, useSearchParams } from 'next/navigation'
 import { Path, SlotID } from "../constant";
 import { IconButton } from "./button";
 import { EmojiAvatar } from "./emoji";
@@ -8,7 +9,6 @@ import LeftIcon from "../icons/left.svg";
 import LightningIcon from "../icons/lightning.svg";
 import EyeIcon from "../icons/eye.svg";
 
-import { useLocation, useNavigate } from "react-router-dom";
 import { Mask, useMaskStore } from "../store/mask";
 import Locale from "../locales";
 import { useAppConfig, useChatStore } from "../store";
@@ -78,17 +78,18 @@ export function NewChat() {
   const masks = maskStore.getAll();
   const groups = useMaskGroup(masks);
 
-  const navigate = useNavigate();
   const config = useAppConfig();
 
   const maskRef = useRef<HTMLDivElement>(null);
 
-  const { state } = useLocation();
+  const searchParams = useSearchParams()
+
+  const fromHome = searchParams.get("fromHome")
 
   const startChat = (mask?: Mask) => {
     setTimeout(() => {
       chatStore.newSession(mask);
-      navigate(Path.Chat);
+      redirect(Path.Chat);
     }, 10);
   };
 
@@ -116,9 +117,9 @@ export function NewChat() {
         <IconButton
           icon={<LeftIcon />}
           text={Locale.NewChat.Return}
-          onClick={() => navigate(Path.Home)}
+          onClick={() => redirect(Path.Home)}
         ></IconButton>
-        {!state?.fromHome && (
+        {!fromHome && (
           <IconButton
             text={Locale.NewChat.NotShow}
             onClick={async () => {
@@ -150,7 +151,7 @@ export function NewChat() {
       <div className={styles["actions"]}>
         <IconButton
           text={Locale.NewChat.More}
-          onClick={() => navigate(Path.Masks)}
+          onClick={() => redirect(Path.Masks)}
           icon={<EyeIcon />}
           bordered
           shadow

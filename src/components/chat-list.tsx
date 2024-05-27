@@ -1,5 +1,4 @@
 import DeleteIcon from "../icons/delete.svg";
-import BotIcon from "../icons/bot.svg";
 
 import styles from "./home.module.scss";
 import {
@@ -9,10 +8,11 @@ import {
   OnDragEndResponder,
 } from "@hello-pangea/dnd";
 
+import { redirect, usePathname } from 'next/navigation'
+
 import { useChatStore } from "../store";
 
 import Locale from "../locales";
-import { useLocation, useNavigate } from "react-router-dom";
 import { Path } from "../constant";
 import { MaskAvatar } from "./mask";
 import { Mask } from "../store/mask";
@@ -41,7 +41,7 @@ export function ChatItem(props: {
     }
   }, [props.selected]);
 
-  const { pathname: currentPath } = useLocation();
+  const currentPath = usePathname()
   return (
     <Draggable draggableId={`${props.id}`} index={props.index}>
       {(provided) => (
@@ -111,7 +111,6 @@ export function ChatList(props: { narrow?: boolean }) {
     ],
   );
   const chatStore = useChatStore();
-  const navigate = useNavigate();
   const isMobileScreen = useMobileScreen();
 
   const onDragEnd: OnDragEndResponder = (result) => {
@@ -149,7 +148,7 @@ export function ChatList(props: { narrow?: boolean }) {
                 index={i}
                 selected={i === selectedIndex}
                 onClick={() => {
-                  navigate(Path.Chat);
+                  redirect(Path.Chat);
                   selectSession(i);
                 }}
                 onDelete={async () => {

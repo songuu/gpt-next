@@ -50,6 +50,7 @@ import Locale, {
 } from "../locales";
 import { copyToClipboard } from "../utils";
 import Link from "next/link";
+import { redirect } from 'next/navigation'
 import {
   Anthropic,
   Azure,
@@ -65,7 +66,6 @@ import {
 import { Prompt, SearchService, usePromptStore } from "../store/prompt";
 import { ErrorBoundary } from "./error";
 import { InputRange } from "./input-range";
-import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarPicker } from "./emoji";
 import { getClientConfig } from "../config/client";
 import { useSyncStore } from "../store/sync";
@@ -497,9 +497,8 @@ function SyncItems() {
           title={Locale.Settings.Sync.CloudState}
           subTitle={
             syncStore.lastProvider
-              ? `${new Date(syncStore.lastSyncTime).toLocaleString()} [${
-                  syncStore.lastProvider
-                }]`
+              ? `${new Date(syncStore.lastSyncTime).toLocaleString()} [${syncStore.lastProvider
+              }]`
               : Locale.Settings.Sync.NotSyncYet
           }
         >
@@ -560,7 +559,6 @@ function SyncItems() {
 }
 
 export function Settings() {
-  const navigate = useNavigate();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const config = useAppConfig();
   const updateConfig = config.update;
@@ -635,7 +633,7 @@ export function Settings() {
   useEffect(() => {
     const keydownEvent = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        navigate(Path.Home);
+        redirect(Path.Home);
       }
     };
     if (clientConfig?.isApp) {
@@ -671,7 +669,7 @@ export function Settings() {
           <div className="window-action-button">
             <IconButton
               icon={<CloseIcon />}
-              onClick={() => navigate(Path.Home)}
+              onClick={() => redirect(Path.Home)}
               bordered
             />
           </div>
@@ -709,8 +707,8 @@ export function Settings() {
               checkingUpdate
                 ? Locale.Settings.Update.IsChecking
                 : hasNewVersion
-                ? Locale.Settings.Update.FoundUpdate(remoteId ?? "ERROR")
-                : Locale.Settings.Update.IsLatest
+                  ? Locale.Settings.Update.FoundUpdate(remoteId ?? "ERROR")
+                  : Locale.Settings.Update.IsLatest
             }
           >
             {checkingUpdate ? (
@@ -843,8 +841,8 @@ export function Settings() {
               onChange={(e) =>
                 updateConfig(
                   (config) =>
-                    (config.dontShowMaskSplashScreen =
-                      !e.currentTarget.checked),
+                  (config.dontShowMaskSplashScreen =
+                    !e.currentTarget.checked),
                 )
               }
             ></input>
@@ -951,8 +949,8 @@ export function Settings() {
                       onChange={(e) => {
                         accessStore.update(
                           (access) =>
-                            (access.provider = e.target
-                              .value as ServiceProvider),
+                          (access.provider = e.target
+                            .value as ServiceProvider),
                         );
                       }}
                     >
@@ -1056,8 +1054,8 @@ export function Settings() {
                           onChange={(e) =>
                             accessStore.update(
                               (access) =>
-                                (access.azureApiVersion =
-                                  e.currentTarget.value),
+                              (access.azureApiVersion =
+                                e.currentTarget.value),
                             )
                           }
                         ></input>
@@ -1116,8 +1114,8 @@ export function Settings() {
                           onChange={(e) =>
                             accessStore.update(
                               (access) =>
-                                (access.googleApiVersion =
-                                  e.currentTarget.value),
+                              (access.googleApiVersion =
+                                e.currentTarget.value),
                             )
                           }
                         ></input>
@@ -1160,8 +1158,8 @@ export function Settings() {
                           onChange={(e) => {
                             accessStore.update(
                               (access) =>
-                                (access.anthropicApiKey =
-                                  e.currentTarget.value),
+                              (access.anthropicApiKey =
+                                e.currentTarget.value),
                             );
                           }}
                         />
@@ -1179,8 +1177,8 @@ export function Settings() {
                           onChange={(e) =>
                             accessStore.update(
                               (access) =>
-                                (access.anthropicApiVersion =
-                                  e.currentTarget.value),
+                              (access.anthropicApiVersion =
+                                e.currentTarget.value),
                             )
                           }
                         ></input>
@@ -1200,9 +1198,9 @@ export function Settings() {
                   ? loadingUsage
                     ? Locale.Settings.Usage.IsChecking
                     : Locale.Settings.Usage.SubTitle(
-                        usage?.used ?? "[?]",
-                        usage?.subscription ?? "[?]",
-                      )
+                      usage?.used ?? "[?]",
+                      usage?.subscription ?? "[?]",
+                    )
                   : Locale.Settings.Usage.NoAccess
               }
             >

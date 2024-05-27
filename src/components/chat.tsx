@@ -8,6 +8,7 @@ import React, {
   Fragment,
   RefObject,
 } from "react";
+import { redirect } from 'next/navigation'
 
 import SendWhiteIcon from "../icons/send-white.svg";
 import BrainIcon from "../icons/brain.svg";
@@ -80,7 +81,6 @@ import {
   showPrompt,
   showToast,
 } from "./ui-lib";
-import { useNavigate } from "react-router-dom";
 import {
   CHAT_PAGE_SIZE,
   LAST_INPUT_KEY,
@@ -106,7 +106,6 @@ export function SessionConfigModel(props: { onClose: () => void }) {
   const chatStore = useChatStore();
   const session = chatStore.currentSession();
   const maskStore = useMaskStore();
-  const navigate = useNavigate();
 
   return (
     <div className="modal-mask">
@@ -133,7 +132,7 @@ export function SessionConfigModel(props: { onClose: () => void }) {
             bordered
             text={Locale.Chat.Config.SaveAs}
             onClick={() => {
-              navigate(Path.Masks);
+              redirect(Path.Masks);
               setTimeout(() => {
                 maskStore.create(session.mask);
               }, 500);
@@ -428,7 +427,6 @@ export function ChatActions(props: {
   uploading: boolean;
 }) {
   const config = useAppConfig();
-  const navigate = useNavigate();
   const chatStore = useChatStore();
 
   // switch themes
@@ -543,7 +541,7 @@ export function ChatActions(props: {
 
       <ChatAction
         onClick={() => {
-          navigate(Path.Masks);
+          redirect(Path.Masks);
         }}
         text={Locale.Chat.InputActions.Masks}
         icon={<MaskIcon />}
@@ -679,9 +677,9 @@ function _Chat() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isScrolledToBottom = scrollRef?.current
     ? Math.abs(
-        scrollRef.current.scrollHeight -
-          (scrollRef.current.scrollTop + scrollRef.current.clientHeight),
-      ) <= 1
+      scrollRef.current.scrollHeight -
+      (scrollRef.current.scrollTop + scrollRef.current.clientHeight),
+    ) <= 1
     : false;
   const { setAutoScroll, scrollDomToBottom } = useScrollToBottom(
     scrollRef,
@@ -689,7 +687,6 @@ function _Chat() {
   );
   const [hitBottom, setHitBottom] = useState(true);
   const isMobileScreen = useMobileScreen();
-  const navigate = useNavigate();
   const [attachImages, setAttachImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
 
@@ -729,7 +726,7 @@ function _Chat() {
   // chat commands shortcuts
   const chatCommands = useChatCommand({
     new: () => chatStore.newSession(),
-    newm: () => navigate(Path.NewChat),
+    newm: () => redirect(Path.NewChat),
     prev: () => chatStore.nextSession(-1),
     next: () => chatStore.nextSession(1),
     clear: () =>
@@ -962,27 +959,27 @@ function _Chat() {
       .concat(
         isLoading
           ? [
-              {
-                ...createMessage({
-                  role: "assistant",
-                  content: "……",
-                }),
-                preview: true,
-              },
-            ]
+            {
+              ...createMessage({
+                role: "assistant",
+                content: "……",
+              }),
+              preview: true,
+            },
+          ]
           : [],
       )
       .concat(
         userInput.length > 0 && config.sendPreviewBubble
           ? [
-              {
-                ...createMessage({
-                  role: "user",
-                  content: userInput,
-                }),
-                preview: true,
-              },
-            ]
+            {
+              ...createMessage({
+                role: "user",
+                content: userInput,
+              }),
+              preview: true,
+            },
+          ]
           : [],
       );
   }, [
@@ -1077,7 +1074,7 @@ function _Chat() {
         if (payload.key || payload.url) {
           showConfirm(
             Locale.URLCommand.Settings +
-              `\n${JSON.stringify(payload, null, 4)}`,
+            `\n${JSON.stringify(payload, null, 4)}`,
           ).then((res) => {
             if (!res) return;
             if (payload.key) {
@@ -1215,7 +1212,7 @@ function _Chat() {
                 icon={<ReturnIcon />}
                 bordered
                 title={Locale.Chat.Actions.ChatList}
-                onClick={() => navigate(Path.Home)}
+                onClick={() => redirect(Path.Home)}
               />
             </div>
           </div>
@@ -1491,11 +1488,10 @@ function _Chat() {
           }}
         />
         <label
-          className={`${styles["chat-input-panel-inner"]} ${
-            attachImages.length != 0
-              ? styles["chat-input-panel-inner-attach"]
-              : ""
-          }`}
+          className={`${styles["chat-input-panel-inner"]} ${attachImages.length != 0
+            ? styles["chat-input-panel-inner-attach"]
+            : ""
+            }`}
           htmlFor="chat-input"
         >
           <textarea
