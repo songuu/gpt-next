@@ -1,8 +1,7 @@
 import { BuildConfig, getBuildConfig } from "./build";
 
 export function getClientConfig() {
-  if (typeof document !== "undefined") {
-    // client side
+  if (typeof document !== "undefined" && queryMeta("config")) {
     return JSON.parse(queryMeta("config")) as BuildConfig;
   }
 

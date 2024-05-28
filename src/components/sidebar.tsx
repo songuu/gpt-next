@@ -2,16 +2,12 @@ import { useEffect, useRef, useMemo } from "react";
 
 import { redirect } from 'next/navigation'
 
-import { createClient } from "../utils/supabase/server";
-
 import styles from "./home.module.scss";
 
 import { IconButton } from "./button";
 import SettingsIcon from "../icons/settings.svg";
-import GithubIcon from "../icons/github.svg";
 import ChatGptIcon from "../icons/chatgpt.svg";
 import AddIcon from "../icons/add.svg";
-import CloseIcon from "../icons/close.svg";
 import DeleteIcon from "../icons/delete.svg";
 import MaskIcon from "../icons/mask.svg";
 import PluginIcon from "../icons/plugin.svg";
@@ -27,7 +23,6 @@ import {
   MIN_SIDEBAR_WIDTH,
   NARROW_SIDEBAR_WIDTH,
   Path,
-  REPO_URL,
 } from "../constant";
 
 import Link from "next/link";
@@ -143,22 +138,6 @@ export function SideBar(props: { className?: string }) {
     () => isIOS() && isMobileScreen,
     [isMobileScreen],
   );
-
-
-  // const canInitSupabaseClient = () => {
-  //   // "use server";
-  //   // This function is just for the interactive tutorial.
-  //   // Feel free to remove it once you have Supabase connected.
-  //   try {
-  //     createClient();
-  //     return true;
-  //   } catch (e) {
-  //     return false;
-  //   }
-  // };
-
-  // canInitSupabaseClient();
-
 
   useHotKey();
 

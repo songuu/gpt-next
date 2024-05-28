@@ -8,7 +8,7 @@ console.log("[Next] build with chunk: ", !disableChunk);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack(config) {
+  webpack (config) {
     config.module.rules.push({
       test: /\.svg$/,
       use: ["@svgr/webpack"],
@@ -33,6 +33,13 @@ const nextConfig = {
   experimental: {
     forceSwcTransforms: true,
   },
+  async redirects () {
+    return [{
+      source: '/',
+      destination: '/chat',
+      permanent: true
+    }]
+  }
 };
 
 const CorsHeaders = [
