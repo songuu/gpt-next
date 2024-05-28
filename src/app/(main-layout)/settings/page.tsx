@@ -1,23 +1,24 @@
+"use client";
 import { useState, useEffect, useMemo } from "react";
 
 import styles from "./settings.module.scss";
 
-import ResetIcon from "../icons/reload.svg";
-import AddIcon from "../icons/add.svg";
-import CloseIcon from "../icons/close.svg";
-import CopyIcon from "../icons/copy.svg";
-import ClearIcon from "../icons/clear.svg";
-import LoadingIcon from "../icons/three-dots.svg";
-import EditIcon from "../icons/edit.svg";
-import EyeIcon from "../icons/eye.svg";
-import DownloadIcon from "../icons/download.svg";
-import UploadIcon from "../icons/upload.svg";
-import ConfigIcon from "../icons/config.svg";
-import ConfirmIcon from "../icons/confirm.svg";
+import ResetIcon from "@/icons/reload.svg";
+import AddIcon from "@/icons/add.svg";
+import CloseIcon from "@/icons/close.svg";
+import CopyIcon from "@/icons/copy.svg";
+import ClearIcon from "@/icons/clear.svg";
+import LoadingIcon from "@/icons/three-dots.svg";
+import EditIcon from "@/icons/edit.svg";
+import EyeIcon from "@/icons/eye.svg";
+import DownloadIcon from "@/icons/download.svg";
+import UploadIcon from "@/icons/upload.svg";
+import ConfigIcon from "@/icons/config.svg";
+import ConfirmIcon from "@/icons/confirm.svg";
 
-import ConnectionIcon from "../icons/connection.svg";
-import CloudSuccessIcon from "../icons/cloud-success.svg";
-import CloudFailIcon from "../icons/cloud-fail.svg";
+import ConnectionIcon from "@/icons/connection.svg";
+import CloudSuccessIcon from "@/icons/cloud-success.svg";
+import CloudFailIcon from "@/icons/cloud-fail.svg";
 
 import {
   Input,
@@ -29,10 +30,10 @@ import {
   Select,
   showConfirm,
   showToast,
-} from "./ui-lib";
-import { ModelConfigList } from "./model-config";
+} from "@/components/ui-lib";
+import { ModelConfigList } from "@/components/model-config";
 
-import { IconButton } from "./button";
+import { IconButton } from "@/components/button";
 import {
   SubmitKey,
   useChatStore,
@@ -40,15 +41,15 @@ import {
   useUpdateStore,
   useAccessStore,
   useAppConfig,
-} from "../store";
+} from "@/store";
 
 import Locale, {
   AllLangs,
   ALL_LANG_OPTIONS,
   changeLang,
   getLang,
-} from "../locales";
-import { copyToClipboard } from "../utils";
+} from "@/locales";
+import { copyToClipboard } from "@/utils";
 import Link from "next/link";
 import { redirect } from 'next/navigation'
 import {
@@ -62,16 +63,16 @@ import {
   ServiceProvider,
   SlotID,
   UPDATE_URL,
-} from "../constant";
-import { Prompt, SearchService, usePromptStore } from "../store/prompt";
-import { ErrorBoundary } from "./error";
-import { InputRange } from "./input-range";
-import { Avatar, AvatarPicker } from "./emoji";
-import { getClientConfig } from "../config/client";
-import { useSyncStore } from "../store/sync";
+} from "@/constant";
+import { Prompt, SearchService, usePromptStore } from "@/store/prompt";
+import { ErrorBoundary } from "@/components/error";
+import { InputRange } from "@/components/input-range";
+import { Avatar, AvatarPicker } from "@/components/emoji";
+import { getClientConfig } from "@/config/client";
+import { useSyncStore } from "@/store/sync";
 import { nanoid } from "nanoid";
-import { useMaskStore } from "../store/mask";
-import { ProviderType } from "../utils/cloud";
+import { useMaskStore } from "@/store/mask";
+import { ProviderType } from "@/utils/cloud";
 
 function EditPromptModal(props: { id: string; onClose: () => void }) {
   const promptStore = usePromptStore();
@@ -558,7 +559,7 @@ function SyncItems() {
   );
 }
 
-export function Settings() {
+export default function Settings() {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const config = useAppConfig();
   const updateConfig = config.update;

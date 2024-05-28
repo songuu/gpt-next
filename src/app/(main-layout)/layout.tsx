@@ -1,27 +1,27 @@
 "use client";
 
-require("../../polyfill");
+require("@/polyfill");
 
 import { useState, useEffect } from "react";
 
 import styles from "./home.module.scss";
 
-import BotIcon from "../../icons/bot.svg";
-import LoadingIcon from "../../icons/three-dots.svg";
+import BotIcon from "@/icons/bot.svg";
+import LoadingIcon from "@/icons/three-dots.svg";
 
-import { getCSSVar, useMobileScreen } from "../../utils";
+import { getCSSVar, useMobileScreen } from "@/utils";
 
-import { ModelProvider, SlotID } from "../../constant";
-import { ErrorBoundary } from "../../components/error";
+import { ModelProvider, SlotID } from "@/constant";
+import { ErrorBoundary } from "@/components/error";
 
-import { getISOLang, getLang } from "../../locales";
+import { getISOLang, getLang } from "@/locales";
 
-import { SideBar } from "../../components/sidebar";
-import { useAppConfig } from "../../store/config";
-import { getClientConfig } from "../../config/client";
-import { ClientApi } from "../../client/api";
-import { useAccessStore } from "../../store";
-import { identifyDefaultClaudeModel } from "../../utils/checkers";
+import { SideBar } from "@/components/sidebar";
+import { useAppConfig } from "@/store/config";
+import { getClientConfig } from "@/config/client";
+import { ClientApi } from "@/client/api";
+import { useAccessStore } from "@/store";
+import { identifyDefaultClaudeModel } from "@/utils/checkers";
 
 export function Loading(props: { noLogo?: boolean }) {
   return (

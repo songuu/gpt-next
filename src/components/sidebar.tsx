@@ -146,7 +146,7 @@ export function SideBar(props: { className?: string }) {
 
 
   // const canInitSupabaseClient = () => {
-  //   "use server";
+  //   // "use server";
   //   // This function is just for the interactive tutorial.
   //   // Feel free to remove it once you have Supabase connected.
   //   try {

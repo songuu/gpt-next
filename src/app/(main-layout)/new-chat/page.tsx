@@ -1,21 +1,21 @@
 import { useEffect, useRef, useState } from "react";
 import { redirect, useSearchParams } from 'next/navigation'
-import { Path, SlotID } from "../constant";
-import { IconButton } from "./button";
-import { EmojiAvatar } from "./emoji";
+import { Path, SlotID } from "@/constant";
+import { IconButton } from "@/components/button";
+import { EmojiAvatar } from "@/components/emoji";
 import styles from "./new-chat.module.scss";
 
-import LeftIcon from "../icons/left.svg";
-import LightningIcon from "../icons/lightning.svg";
-import EyeIcon from "../icons/eye.svg";
+import LeftIcon from "@/icons/left.svg";
+import LightningIcon from "@/icons/lightning.svg";
+import EyeIcon from "@/icons/eye.svg";
 
-import { Mask, useMaskStore } from "../store/mask";
-import Locale from "../locales";
-import { useAppConfig, useChatStore } from "../store";
-import { MaskAvatar } from "./mask";
-import { useCommand } from "../command";
-import { showConfirm } from "./ui-lib";
-import { BUILTIN_MASK_STORE } from "../masks";
+import { Mask, useMaskStore } from "@/store/mask";
+import Locale from "@/locales";
+import { useAppConfig, useChatStore } from "@/store";
+import { MaskAvatar } from "@/components/mask";
+import { useCommand } from "@/command";
+import { showConfirm } from "@/components/ui-lib";
+import { BUILTIN_MASK_STORE } from "@/masks";
 
 function MaskItem(props: { mask: Mask; onClick?: () => void }) {
   return (
