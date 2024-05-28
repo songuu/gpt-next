@@ -152,9 +152,11 @@ export function useLoadData() {
   } else {
     api = new ClientApi(ModelProvider.GPT);
   }
+
   useEffect(() => {
     (async () => {
       const models = await api.llm.models();
+
       config.mergeModels(models);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps

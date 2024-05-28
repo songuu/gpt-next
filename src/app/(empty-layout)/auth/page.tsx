@@ -1,16 +1,17 @@
+"use client";
 import { redirect } from "next/navigation";
 import styles from "./auth.module.scss";
-import { IconButton } from "./button";
+import { IconButton } from "@/components/button";
 
-import { Path } from "../constant";
-import { useAccessStore } from "../store";
-import Locale from "../locales";
+import { Path } from "@/constant";
+import { useAccessStore } from "@/store";
+import Locale from "@/locales";
 
-import BotIcon from "../icons/bot.svg";
+import BotIcon from "@/icons/bot.svg";
 import { useEffect } from "react";
-import { getClientConfig } from "../config/client";
+import { getClientConfig } from "@/config/client";
 
-export function AuthPage() {
+export default function AuthPage() {
   const accessStore = useAccessStore();
 
   const goHome = () => redirect(Path.Home);

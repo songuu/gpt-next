@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSideConfig } from "../config/server";
-import { DEFAULT_MODELS, OPENAI_BASE_URL, GEMINI_BASE_URL } from "../constant";
-import { collectModelTable } from "../utils/model";
-import { makeAzurePath } from "../azure";
+import { getServerSideConfig } from "@/config/server";
+import { DEFAULT_MODELS, OPENAI_BASE_URL, GEMINI_BASE_URL } from "@/constant";
+import { collectModelTable } from "@/utils/model";
+import { makeAzurePath } from "@/azure";
 
 const serverConfig = getServerSideConfig();
 
@@ -112,16 +112,16 @@ export async function requestOpenai(req: NextRequest) {
   try {
     const res = await fetch(fetchUrl, fetchOptions);
 
-  // Extract the OpenAI-Organization header from the response
-  const openaiOrganizationHeader = res.headers.get("OpenAI-Organization");
+    // Extract the OpenAI-Organization header from the response
+    const openaiOrganizationHeader = res.headers.get("OpenAI-Organization");
 
-  // Check if serverConfig.openaiOrgId is defined and not an empty string
-  if (serverConfig.openaiOrgId && serverConfig.openaiOrgId.trim() !== "") {
-    // If openaiOrganizationHeader is present, log it; otherwise, log that the header is not present
-    console.log("[Org ID]", openaiOrganizationHeader);
-  } else {
-    console.log("[Org ID] is not set up.");
-  }
+    // Check if serverConfig.openaiOrgId is defined and not an empty string
+    if (serverConfig.openaiOrgId && serverConfig.openaiOrgId.trim() !== "") {
+      // If openaiOrganizationHeader is present, log it; otherwise, log that the header is not present
+      console.log("[Org ID]", openaiOrganizationHeader);
+    } else {
+      console.log("[Org ID] is not set up.");
+    }
 
     // to prevent browser prompt for credentials
     const newHeaders = new Headers(res.headers);

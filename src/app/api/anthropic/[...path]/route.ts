@@ -1,15 +1,15 @@
-import { getServerSideConfig } from "@/app/config/server";
+import { getServerSideConfig } from "@/config/server";
 import {
   ANTHROPIC_BASE_URL,
   Anthropic,
   ApiPath,
   DEFAULT_MODELS,
   ModelProvider,
-} from "@/app/constant";
-import { prettyObject } from "@/app/utils/format";
+} from "@/constant";
+import { prettyObject } from "@/utils/format";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../auth";
-import { collectModelTable } from "@/app/utils/model";
+import { collectModelTable } from "@/utils/model";
 
 const ALLOWD_PATH = new Set([Anthropic.ChatPath, Anthropic.ChatPath1]);
 
