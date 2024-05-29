@@ -1,13 +1,13 @@
-import { Google, REQUEST_TIMEOUT_MS } from "../../constant";
+import { Google, REQUEST_TIMEOUT_MS } from "@/constant";
 import { ChatOptions, getHeaders, LLMApi, LLMModel, LLMUsage } from "../api";
-import { useAccessStore, useAppConfig, useChatStore } from "../../store";
-import { getClientConfig } from "../../config/client";
-import { DEFAULT_API_HOST } from "../../constant";
+import { useAccessStore, useAppConfig, useChatStore } from "@/store";
+import { getClientConfig } from "@/config/client";
+import { DEFAULT_API_HOST } from "@/constant";
 import {
   getMessageTextContent,
   getMessageImages,
   isVisionModel,
-} from "../../utils";
+} from "@/utils";
 
 export class GeminiProApi implements LLMApi {
   extractMessage(res: any) {
@@ -49,7 +49,7 @@ export class GeminiProApi implements LLMApi {
     });
 
     // google requires that role in neighboring messages must not be the same
-    for (let i = 0; i < messages.length - 1; ) {
+    for (let i = 0; i < messages.length - 1;) {
       // Check if current and next item both have the role "model"
       if (messages[i].role === messages[i + 1].role) {
         // Concatenate the 'parts' of the current and next item
@@ -139,7 +139,7 @@ export class GeminiProApi implements LLMApi {
         () => controller.abort(),
         REQUEST_TIMEOUT_MS,
       );
-      
+
       if (shouldStream) {
         let responseText = "";
         let remainText = "";
@@ -248,7 +248,7 @@ export class GeminiProApi implements LLMApi {
           options.onError?.(
             new Error(
               "Message is being blocked for reason: " +
-                resJson.promptFeedback.blockReason,
+              resJson.promptFeedback.blockReason,
             ),
           );
         }

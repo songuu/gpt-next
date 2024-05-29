@@ -8,7 +8,7 @@ export default function App({
   children: React.ReactNode;
 }) {
   return <Home>
-    <Nav />
+    {/* <Nav /> */}
     {children}
   </Home>
 }

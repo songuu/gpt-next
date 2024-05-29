@@ -73,6 +73,9 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
       case ModelProvider.Claude:
         systemApiKey = serverConfig.anthropicApiKey;
         break;
+      case ModelProvider.Qwen:
+        systemApiKey = serverConfig.qwenApiKey;
+        break;
       case ModelProvider.GPT:
       default:
         if (serverConfig.isAzure) {

@@ -42,6 +42,10 @@ const DEFAULT_ACCESS_STATE = {
   anthropicApiVersion: "2023-06-01",
   anthropicUrl: "",
 
+  // qwen
+  qwenUrl: "https://dashscope.aliyuncs.com/api/v1/",
+  qwenApiKey: "",
+
   // server config
   needCode: true,
   hideUserApiKey: false,
@@ -78,6 +82,10 @@ export const useAccessStore = createPersistStore(
       return ensure(get(), ["anthropicApiKey"]);
     },
 
+    isValidQwen() {
+      return ensure(get(), ['qwenUrl', 'qwenApiKey'])
+    },
+
     isAuthorized() {
       this.fetch();
 
@@ -87,10 +95,12 @@ export const useAccessStore = createPersistStore(
         this.isValidAzure() ||
         this.isValidGoogle() ||
         this.isValidAnthropic() ||
+        this.isValidQwen() ||
         !this.enabledAccessControl() ||
         (this.enabledAccessControl() && ensure(get(), ["accessCode"]))
       );
     },
+
     fetch() {
       if (fetchState > 0 || getClientConfig()?.buildMode === "export") return;
       fetchState = 1;

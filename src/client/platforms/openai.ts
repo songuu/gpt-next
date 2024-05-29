@@ -6,8 +6,8 @@ import {
   OpenaiPath,
   REQUEST_TIMEOUT_MS,
   ServiceProvider,
-} from "../../constant";
-import { useAccessStore, useAppConfig, useChatStore } from "../../store";
+} from "@/constant";
+import { useAccessStore, useAppConfig, useChatStore } from "@/store";
 
 import {
   ChatOptions,
@@ -17,19 +17,19 @@ import {
   LLMUsage,
   MultimodalContent,
 } from "../api";
-import Locale from "../../locales";
+import Locale from "@/locales";
 import {
   EventStreamContentType,
   fetchEventSource,
 } from "@fortaine/fetch-event-source";
-import { prettyObject } from "../../utils/format";
-import { getClientConfig } from "../../config/client";
-import { makeAzurePath } from "../../azure";
+import { prettyObject } from "@/utils/format";
+import { getClientConfig } from "@/config/client";
+import { makeAzurePath } from "@/azure";
 import {
   getMessageTextContent,
   getMessageImages,
   isVisionModel,
-} from "../../utils";
+} from "@/utils";
 
 export interface OpenAIListModelResponse {
   object: string;
@@ -220,7 +220,7 @@ export class ChatGPTApi implements LLMApi {
               try {
                 const resJson = await res.clone().json();
                 extraInfo = prettyObject(resJson);
-              } catch {}
+              } catch { }
 
               if (res.status === 401) {
                 responseTexts.push(Locale.Error.Unauthorized);

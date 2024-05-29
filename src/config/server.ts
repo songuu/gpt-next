@@ -36,7 +36,8 @@ declare global {
       GTM_ID?: string;
 
       // qianwen
-      QWEN?: string;
+      QWEN_URL?: string;
+      QWEN_API_KEY?: string;
     }
   }
 }
@@ -91,6 +92,7 @@ export const getServerSideConfig = () => {
   const isAzure = !!process.env.AZURE_URL;
   const isGoogle = !!process.env.GOOGLE_API_KEY;
   const isAnthropic = !!process.env.ANTHROPIC_API_KEY;
+  const isQwen = !!process.env.QWEN_API_KEY;
 
   // const apiKeyEnvVar = process.env.OPENAI_API_KEY ?? "";
   // const apiKeys = apiKeyEnvVar.split(",").map((v) => v.trim());
@@ -122,6 +124,10 @@ export const getServerSideConfig = () => {
     anthropicApiKey: getApiKey(process.env.ANTHROPIC_API_KEY),
     anthropicApiVersion: process.env.ANTHROPIC_API_VERSION,
     anthropicUrl: process.env.ANTHROPIC_URL,
+
+    isQwen,
+    qwenApiKey: getApiKey(process.env.QWEN_API_KEY),
+    qwenUrl: process.env.QWEN_URL,
 
     gtmId: process.env.GTM_ID,
 

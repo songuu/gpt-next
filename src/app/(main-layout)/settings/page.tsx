@@ -51,7 +51,7 @@ import Locale, {
 } from "@/locales";
 import { copyToClipboard } from "@/utils";
 import Link from "next/link";
-import { redirect } from 'next/navigation'
+import { redirect, useRouter } from 'next/navigation'
 import {
   Anthropic,
   Azure,
@@ -560,6 +560,7 @@ function SyncItems() {
 }
 
 export default function Settings() {
+  const router = useRouter();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const config = useAppConfig();
   const updateConfig = config.update;
@@ -670,7 +671,10 @@ export default function Settings() {
           <div className="window-action-button">
             <IconButton
               icon={<CloseIcon />}
-              onClick={() => redirect(Path.Home)}
+              onClick={() => {
+                router.replace(Path.Chat, {})
+                // redirect(Path.Chat)
+              }}
               bordered
             />
           </div>

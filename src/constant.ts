@@ -30,6 +30,7 @@ export enum ApiPath {
   Cors = "",
   OpenAI = "/api/openai",
   Anthropic = "/api/anthropic",
+  Qwen = '/api/qwen'
 }
 
 export enum SlotID {
@@ -73,12 +74,14 @@ export enum ServiceProvider {
   Azure = "Azure",
   Google = "Google",
   Anthropic = "Anthropic",
+  Qwen = "Qwen"
 }
 
 export enum ModelProvider {
   GPT = "GPT",
   GeminiPro = "GeminiPro",
   Claude = "Claude",
+  Qwen = "Qwen"
 }
 
 export const Anthropic = {
@@ -103,6 +106,11 @@ export const Google = {
   ExampleEndpoint: "https://generativelanguage.googleapis.com/",
   ChatPath: (modelName: string) => `v1beta/models/${modelName}:generateContent`,
 };
+
+export const Qwen = {
+  ExampleEndpoint: "https://dashscope.aliyuncs.com/api/",
+  ChatPath: ''
+}
 
 export const DEFAULT_INPUT_TEMPLATE = `{{input}}`; // input / time / model / lang
 // export const DEFAULT_SYSTEM_TEMPLATE = `
@@ -164,6 +172,23 @@ const anthropicModels = [
   "claude-3-haiku-20240307",
 ];
 
+const qwenModels = [
+  // 通义千问
+  'qwen-long',
+  'qwen-turbo',
+  'qwen-plus',
+  'qwen-max',
+  'qwen-max-0428',
+  'qwen-max-0403',
+  'qwen-max-0107',
+  'qwen-max-1201',
+  'qwen-max-longcontext',
+  // 通义千问开源系列
+  'qwen-7b-chat',
+  'qwen-14b-chat',
+  'qwen-72b-chat',
+]
+
 export const DEFAULT_MODELS = [
   ...openaiModels.map((name) => ({
     name,
@@ -192,6 +217,15 @@ export const DEFAULT_MODELS = [
       providerType: "anthropic",
     },
   })),
+  ...qwenModels.map((name) => ({
+    name,
+    available: true,
+    provider: {
+      id: "qwen",
+      providerName: "Qwen",
+      providerType: "qwen"
+    }
+  }))
 ] as const;
 
 export const CHAT_PAGE_SIZE = 15;

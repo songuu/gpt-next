@@ -120,7 +120,7 @@ function fillTemplateWith(input: string, modelConfig: ModelConfig) {
   // Find the model in the DEFAULT_MODELS array that matches the modelConfig.model
   const modelInfo = DEFAULT_MODELS.find((m) => m.name === modelConfig.model);
 
-  var serviceProvider = "OpenAI";
+  let serviceProvider = "OpenAI";
   if (modelInfo) {
     // TODO: auto detect the providerName from the modelConfig.model
 
@@ -368,6 +368,8 @@ export const useChatStore = createPersistStore(
           api = new ClientApi(ModelProvider.GeminiPro);
         } else if (identifyDefaultClaudeModel(modelConfig.model)) {
           api = new ClientApi(ModelProvider.Claude);
+        } else if (modelConfig.model.startsWith("qwen")) {
+          api = new ClientApi(ModelProvider.Qwen);
         } else {
           api = new ClientApi(ModelProvider.GPT);
         }
@@ -456,14 +458,14 @@ export const useChatStore = createPersistStore(
         var systemPrompts: ChatMessage[] = [];
         systemPrompts = shouldInjectSystemPrompts
           ? [
-              createMessage({
-                role: "system",
-                content: fillTemplateWith("", {
-                  ...modelConfig,
-                  template: DEFAULT_SYSTEM_TEMPLATE,
-                }),
+            createMessage({
+              role: "system",
+              content: fillTemplateWith("", {
+                ...modelConfig,
+                template: DEFAULT_SYSTEM_TEMPLATE,
               }),
-            ]
+            }),
+          ]
           : [];
         if (shouldInjectSystemPrompts) {
           console.log(
@@ -583,8 +585,8 @@ export const useChatStore = createPersistStore(
             onFinish(message) {
               get().updateCurrentSession(
                 (session) =>
-                  (session.topic =
-                    message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC),
+                (session.topic =
+                  message.length > 0 ? trimTopic(message) : DEFAULT_TOPIC),
               );
             },
           });
