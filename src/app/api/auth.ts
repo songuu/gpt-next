@@ -38,8 +38,11 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
   console.log("[Auth] hashed access code:", hashedCode);
   console.log("[User IP] ", getIP(req));
   console.log("[Time] ", new Date().toLocaleString());
+  console.log("[ApiKey] ", apiKey);
+  console.log("modelProvider=====>", modelProvider)
 
   if (serverConfig.needCode && !serverConfig.codes.has(hashedCode) && !apiKey) {
+    console.log("serverConfig.needCode")
     return {
       error: true,
       msg: !accessCode ? "empty access code" : "wrong access code",
@@ -47,6 +50,7 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
   }
 
   if (serverConfig.hideUserApiKey && !!apiKey) {
+    console.log("serverConfig.hideUserApiKey")
     return {
       error: true,
       msg: "you are not allowed to access with your own api key",
@@ -56,6 +60,7 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
   // if user does not provide an api key, inject system api key
   if (!apiKey) {
     const serverConfig = getServerSideConfig();
+
 
     // const systemApiKey =
     //   modelProvider === ModelProvider.GeminiPro
@@ -84,6 +89,8 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
           systemApiKey = serverConfig.apiKey;
         }
     }
+    
+    console.log("systemApiKey===>", systemApiKey)
 
     if (systemApiKey) {
       console.log("[Auth] use system api key");

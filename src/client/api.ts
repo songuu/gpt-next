@@ -108,6 +108,7 @@ export class ClientApi {
         break;
       default:
         this.llm = new ChatGPTApi();
+        break;
     }
   }
 
@@ -165,7 +166,7 @@ export function getHeaders() {
   const isGoogle = modelConfig.model.startsWith("gemini");
   const isAzure = accessStore.provider === ServiceProvider.Azure;
   const isQwen = accessStore.provider === ServiceProvider.Qwen;
-  const authHeader = isAzure ? "api-key" : "Authorization";
+  const authHeader = isAzure ? "api-key" : isQwen ? "api_key" : "Authorization";
   const apiKey = isGoogle
     ? accessStore.googleApiKey
     : isAzure

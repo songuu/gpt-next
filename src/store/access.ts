@@ -43,7 +43,7 @@ const DEFAULT_ACCESS_STATE = {
   anthropicUrl: "",
 
   // qwen
-  qwenUrl: "https://dashscope.aliyuncs.com/api/v1/",
+  qwenUrl: "https://dashscope.aliyuncs.com",
   qwenApiKey: "",
 
   // server config

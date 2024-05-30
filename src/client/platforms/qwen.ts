@@ -6,19 +6,17 @@ import {
 import {
   ApiPath,
   DEFAULT_API_HOST,
-  DEFAULT_MODELS,
-  OpenaiPath,
   REQUEST_TIMEOUT_MS,
-  ServiceProvider,
   Qwen,
 } from "@/constant";
-import { useAccessStore, useAppConfig, useChatStore } from "@/store";
+import { ModelType, useAccessStore, useAppConfig, useChatStore } from "@/store";
 import {
   getMessageTextContent,
-  getMessageImages,
   isVisionModel,
 } from "@/utils";
+import { prettyObject } from "@/utils/format";
 import { getClientConfig } from "@/config/client";
+import Locale from "@/locales";
 
 export const ROLES = ["system", "user", "assistant"] as const;
 
@@ -35,17 +33,21 @@ export function getCompletionCreateEndpoint(model: string) {
 }
 
 interface RequestPayload {
-  messages: {
-    role: "system" | "user" | "assistant";
-    content: string | MultimodalContent[];
-  }[];
   stream?: boolean;
   model: string;
   temperature: number;
-  presence_penalty: number;
-  frequency_penalty: number;
+  presence_penalty?: number;
+  frequency_penalty?: number;
   top_p: number;
   max_tokens?: number;
+  __binaryResponse?: boolean;
+  parameters?: any;
+  input: {
+    messages: {
+      role: "system" | "user" | "assistant";
+      content: string | MultimodalContent[];
+    }[];
+  }
 }
 
 import {
@@ -98,7 +100,9 @@ export interface ChatOptions {
 }
 
 export class QwenApi implements LLMApi {
-  extractMessage(res: any) { }
+  extractMessage(res: any) {
+    return res.choices?.at(0)?.message?.content ?? "";
+  }
 
   async chat(options: ChatOptions) {
     const visionModel = isVisionModel(options.config.model);
@@ -116,15 +120,16 @@ export class QwenApi implements LLMApi {
       },
     };
     const requestPayload: RequestPayload = {
-      messages,
+      input: { messages },
       stream: options.config.stream,
       model: modelConfig.model,
       temperature: modelConfig.temperature,
       presence_penalty: modelConfig.presence_penalty,
-      frequency_penalty: modelConfig.frequency_penalty,
       top_p: modelConfig.top_p,
-      // max_tokens: Math.max(modelConfig.max_tokens, 1024),
-      // Please do not ask me why not send max_tokens, no reason, this param is just shit, I dont want to explain anymore.
+      __binaryResponse: true,
+      parameters: {
+        incremental_output: true,
+      },
     };
 
     const accessStore = useAccessStore.getState();
@@ -142,7 +147,7 @@ export class QwenApi implements LLMApi {
     options.onController?.(controller);
 
     try {
-      const path = this.path(Qwen.ChatPath);
+      const path = this.path(modelConfig.model);
 
       if (isApp) {
         baseUrl += `?key=${accessStore.qwenApiKey}`;
@@ -165,6 +170,8 @@ export class QwenApi implements LLMApi {
         let responseText = "";
         let remainText = "";
         let finished = false;
+
+        let existingTexts: string[] = [];
 
         // animate response to make it looks smooth
         function animateResponseText() {
@@ -197,32 +204,165 @@ export class QwenApi implements LLMApi {
 
         controller.signal.onabort = finish;
 
-        fetchEventSource(path, {
-          ...chatPayload,
-          openWhenHidden: true,
-          async onopen(res) {
-            clearTimeout(requestTimeoutId);
-            const contentType = res.headers.get("content-type");
-            console.log(
-              "[Qwen] request response content type: ",
-              contentType,
-            );
+        console.log("[path=====>] ", path, chatPayload)
 
-            if (contentType?.startsWith("text/plain")) {
-              responseText = await res.clone().text();
-              return finish();
+        fetch(path, chatPayload).then((response) => {
+          const reader = response?.body?.getReader();
+          const decoder = new TextDecoder();
+          let partialData = "";
+
+          return reader?.read().then(function processText({
+            done,
+            value,
+          }): Promise<any> {
+            if (done) {
+              console.log("JSON.parse(partialData)", response)
+              if (response.status !== 200) {
+                try {
+                  let data = JSON.parse(partialData);
+                  if (data && data[0].error) {
+                    options.onError?.(new Error(data[0].error.message));
+                  } else {
+                    options.onError?.(new Error("Request failed"));
+                  }
+                } catch (_) {
+                  options.onError?.(new Error("Request failed"));
+                }
+              }
+
+              console.log("Stream complete");
+              // options.onFinish(responseText + remainText);
+              finished = true;
+              return Promise.resolve();
             }
 
-            console.log("res", res)
-          },
-          onclose() {
-            finish();
-          },
-          onerror(e) {
-            options.onError?.(e);
-            throw e;
-          },
-        })
+            partialData += decoder.decode(value, { stream: true });
+
+            try {
+              const resultText = getResult(partialData);
+              console.log("qwen data", resultText);
+
+              // const textArray = data.reduce(
+              //   (acc: string[], item: { candidates: any[] }) => {
+              //     const texts = item.candidates.map((candidate) =>
+              //       candidate.content.parts
+              //         .map((part: { text: any }) => part.text)
+              //         .join(""),
+              //     );
+              //     return acc.concat(texts);
+              //   },
+              //   [],
+              // );
+
+              // if (resultText.length > existingTexts.length) {
+              //   const deltaArray = textArray.slice(existingTexts.length);
+              //   existingTexts = textArray;
+              //   remainText += deltaArray.join("");
+              // }
+            } catch (error) {
+              console.log("[Response Animation] error: ", error, partialData);
+              // skip error message when parsing json
+            }
+
+            return reader.read().then(processText);
+          })
+        }).catch((error) => {
+          console.error("Error:", error);
+        });
+
+        // fetchEventSource(path, {
+        //   ...chatPayload,
+        //   openWhenHidden: true,
+        //   async onopen(res) {
+        //     clearTimeout(requestTimeoutId);
+        //     const contentType = res.headers.get("content-type");
+        //     console.log(
+        //       "[Qwen] request response content type: ",
+        //       res,
+        //     );
+
+        //     if (contentType?.startsWith("text/plain")) {
+        //       responseText = await res.clone().text();
+        //       return finish();
+        //     }
+
+        //     console.log("[Qwen] response", res)
+
+        //     if (
+        //       !res.ok ||
+        //       !res.headers
+        //         .get("content-type")
+        //         ?.startsWith(EventStreamContentType) ||
+        //       res.status !== 200
+        //     ) {
+        //       const responseTexts = [responseText];
+        //       let extraInfo = await res.clone().text();
+        //       try {
+        //         const resJson = await res.clone().json();
+        //         extraInfo = prettyObject(resJson);
+        //       } catch { }
+
+        //       if (res.status === 401) {
+        //         responseTexts.push(Locale.Error.Unauthorized);
+        //       }
+
+        //       if (extraInfo) {
+        //         responseTexts.push(extraInfo);
+        //       }
+
+        //       responseText = responseTexts.join("\n\n");
+
+        //       return finish();
+        //     }
+        //   },
+        //   onmessage(msg) {
+        //     if (msg.data === "[DONE]" || finished) {
+        //       return finish();
+        //     }
+        //     const text = msg.data;
+        //     try {
+        //       const json = JSON.parse(text);
+        //       const choices = json.choices as Array<{
+        //         delta: { content: string };
+        //       }>;
+        //       const delta = choices[0]?.delta?.content;
+        //       const textmoderation = json?.prompt_filter_results;
+
+        //       if (delta) {
+        //         remainText += delta;
+        //       }
+
+        //       // if (
+        //       //   textmoderation &&
+        //       //   textmoderation.length > 0 &&
+        //       //   ServiceProvider.Azure
+        //       // ) {
+        //       //   const contentFilterResults =
+        //       //     textmoderation[0]?.content_filter_results;
+        //       //   console.log(
+        //       //     `[${ServiceProvider.Azure}] [Text Moderation] flagged categories result:`,
+        //       //     contentFilterResults,
+        //       //   );
+        //       // }
+        //     } catch (e) {
+        //       console.error("[Request] parse error", text, msg);
+        //     }
+        //   },
+        //   onclose() {
+        //     finish();
+        //   },
+        //   onerror(e) {
+        //     options.onError?.(e);
+        //     throw e;
+        //   },
+        // })
+      } else {
+        const res = await fetch(path, chatPayload);
+        clearTimeout(requestTimeoutId);
+
+        const resJson = await res.json();
+        const message = this.extractMessage(resJson);
+        options.onFinish(message);
       }
 
     } catch (err) { }
@@ -236,7 +376,7 @@ export class QwenApi implements LLMApi {
     return [];
   }
 
-  path(path: string): string {
+  path(model: string): string {
     const accessStore = useAccessStore.getState();
 
     let baseUrl: string = "";
@@ -251,7 +391,7 @@ export class QwenApi implements LLMApi {
 
       baseUrl = isApp
         ? DEFAULT_API_HOST + "/api/proxy/qwen"
-        : ApiPath.Anthropic;
+        : ApiPath.Qwen;
     }
 
     if (!baseUrl.startsWith("http") && !baseUrl.startsWith("/api")) {
@@ -260,6 +400,25 @@ export class QwenApi implements LLMApi {
 
     baseUrl = trimEnd(baseUrl, "/");
 
-    return `${baseUrl}/${path}`;
+    const path = getCompletionCreateEndpoint(model)
+
+    return `${baseUrl}${path}`;
+  }
+}
+
+function ensureProperEnding(str: string) {
+  if (str.startsWith("[") && !str.endsWith("]")) {
+    return str + "]";
+  }
+  return str;
+}
+
+function getResult(resultText: string) {
+  const lines = resultText.split("\n");
+  for (const line of lines) {
+    if (line.startsWith("data:")) {
+      const data = JSON.parse(line.slice(5));
+      return data;
+    }
   }
 }

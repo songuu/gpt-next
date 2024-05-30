@@ -14,6 +14,8 @@ export const ANTHROPIC_BASE_URL = "https://api.anthropic.com";
 
 export const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/";
 
+export const QWEN_BASE_URL = "https://dashscope.aliyuncs.com/"
+
 export enum Path {
   Home = "/",
   Chat = "/chat",

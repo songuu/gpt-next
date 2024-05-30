@@ -119,9 +119,8 @@ function Steps<
           return (
             <div
               key={i}
-              className={`${styles["step"]} ${
-                styles[i <= props.index ? "step-finished" : ""]
-              } ${i === props.index && styles["step-current"]} clickable`}
+              className={`${styles["step"]} ${styles[i <= props.index ? "step-finished" : ""]
+                } ${i === props.index && styles["step-current"]} clickable`}
               onClick={() => {
                 props.onStepChange?.(i);
               }}
@@ -316,6 +315,8 @@ export function PreviewActions(props: {
     var api: ClientApi;
     if (config.modelConfig.model.startsWith("gemini")) {
       api = new ClientApi(ModelProvider.GeminiPro);
+    } else if (config.modelConfig.model.startsWith("qwen")) {
+      api = new ClientApi(ModelProvider.Qwen);
     } else if (identifyDefaultClaudeModel(config.modelConfig.model)) {
       api = new ClientApi(ModelProvider.Claude);
     } else {
@@ -640,8 +641,8 @@ export function MarkdownPreviewer(props: {
         return m.role === "user"
           ? `## ${Locale.Export.MessageFromYou}:\n${getMessageTextContent(m)}`
           : `## ${Locale.Export.MessageFromChatGPT}:\n${getMessageTextContent(
-              m,
-            ).trim()}`;
+            m,
+          ).trim()}`;
       })
       .join("\n\n");
 
