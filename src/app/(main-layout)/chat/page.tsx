@@ -1202,7 +1202,6 @@ function _Chat() {
     }
     setAttachImages(images);
   }
-
   return (
     <div className={styles.chat} key={session.id}>
       <div className="window-header" data-tauri-drag-region>

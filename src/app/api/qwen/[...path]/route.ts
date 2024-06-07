@@ -1,11 +1,8 @@
 import { getServerSideConfig } from "@/config/server";
-import { ModelProvider, Qwen, QWEN_BASE_URL } from "@/constant";
+import { ModelProvider, QWEN_BASE_URL } from "@/constant";
 import { prettyObject } from "@/utils/format";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "../../auth";
-import { requestOpenai } from "../../common";
-
-const ALLOWD_PATH = new Set(Object.values(Qwen));
 
 async function handle(
   req: NextRequest,
@@ -42,21 +39,6 @@ async function handle(
     },
     10 * 60 * 1000,
   );
-
-  const subpath = params.path.join("/");
-
-  // if (!ALLOWD_PATH.has(subpath)) {
-  //   console.log("[Qwen Route] forbidden path ", subpath);
-  //   return NextResponse.json(
-  //     {
-  //       error: true,
-  //       msg: "you are not allowed to request " + subpath,
-  //     },
-  //     {
-  //       status: 403,
-  //     },
-  //   );
-  // }
 
   const authResult = auth(req, ModelProvider.Qwen);
 
@@ -105,7 +87,7 @@ async function handle(
     // to disable nginx buffering
     newHeaders.set("X-Accel-Buffering", "no");
 
-    // console.log("res====>", res)
+    // console.log("res====>", res.body)
 
     return new Response(res.body, {
       status: res.status,
@@ -115,6 +97,8 @@ async function handle(
   } catch (e) {
     console.error("[Qwen] ", e);
     return NextResponse.json(prettyObject(e));
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

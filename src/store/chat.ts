@@ -312,32 +312,65 @@ export const useChatStore = createPersistStore(
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
 
+        const modelInfo = DEFAULT_MODELS.find((m) => m.name === modelConfig.model);
+
+        let serviceProvider = "OpenAI";
+        if (modelInfo) {
+          serviceProvider = modelInfo.provider.providerName;
+        }
+
+        const isQwen = serviceProvider === 'Qwen';
+
+        /* 
+        * qwen格式
+        *   content: [
+        *     { text: ''},
+        *     { image: ''}
+        *   ]
+        * 其他
+        *   content: [
+        *     {
+        *      type: "text",
+        *      text: '',
+        *     },
+        *     {
+        *       type: 'image_url',
+        *       image_url: {
+        *         url: ''
+        *       }
+        *     }
+        *   ]
+        *   }
+        *
+        */
+
         const userContent = fillTemplateWith(content, modelConfig);
         console.log("[User Input] after template: ", userContent);
 
         let mContent: string | MultimodalContent[] = userContent;
 
         if (attachImages && attachImages.length > 0) {
-          mContent = [
-            {
-              type: "text",
-              text: userContent,
-            },
-          ];
+          mContent = [{
+            text: userContent,
+            ...(!isQwen && { type: "text" })
+          }];
           mContent = mContent.concat(
             attachImages.map((url) => {
               return {
-                type: "image_url",
-                image_url: {
-                  url: url,
-                },
-              };
+                ...(isQwen && { image: "https://broadscope-dialogue.oss-cn-beijing.aliyuncs.com/upload/20240607/79b66a57d9416accc597cbee50da56f6/30d98186399d4f63bfbaa082c9c0fe9a/%E5%9F%8E%E5%A0%A11.jpg?Expires=1749264486&OSSAccessKeyId=LTAI5t6Lw1UpPMCpnvqL2Syt&Signature=6Y5rLr%2FL8cdIVCydQ0m0Pp5Dbp8%3D" }),
+                ...(!isQwen && {
+                  type: "image_url", image_url: {
+                    url: url
+                  }
+                })
+              }
             }),
           );
         }
         let userMessage: ChatMessage = createMessage({
           role: "user",
           content: mContent,
+          model: modelConfig.model // 主要是为了不同的模型进行不同的渲染
         });
 
         const botMessage: ChatMessage = createMessage({

@@ -157,6 +157,7 @@ const openaiModels = [
   "gpt-4-turbo-preview",
   "gpt-4-vision-preview",
   "gpt-4-turbo-2024-04-09",
+  "gpt-4o"
 ];
 
 const googleModels = [
@@ -174,9 +175,10 @@ const anthropicModels = [
   "claude-3-haiku-20240307",
 ];
 
-const qwenModels = [
+export const qwenModels1 = [
   // 通义千问
   'qwen-long',
+  // 长文本，多轮
   'qwen-turbo',
   'qwen-plus',
   'qwen-max',
@@ -189,6 +191,28 @@ const qwenModels = [
   'qwen-7b-chat',
   'qwen-14b-chat',
   'qwen-72b-chat',
+]
+
+export const qwenModels2 = [
+  'qwen2-72b-instruct',
+  // 通义千问图文
+  'qwen-vl-v1',
+  'qwen-vl-chat-v1',
+  // 通义千问图文 兼容openai
+  'qwen-vl-plus',
+  'qwen-vl-max'
+]
+
+export const disabledImgModels = [
+  ...qwenModels1,
+  'qwen2-72b-instruct',
+  'qwen-vl-v1',
+  'qwen-vl-chat-v1'
+]
+
+export const qwenModels = [
+  ...qwenModels1,
+  ...qwenModels2
 ]
 
 export const DEFAULT_MODELS = [

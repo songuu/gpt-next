@@ -1,22 +1,15 @@
 "use client";
 import {
-  EventStreamContentType,
-  fetchEventSource,
-} from "@fortaine/fetch-event-source"
-import {
   ApiPath,
   DEFAULT_API_HOST,
-  REQUEST_TIMEOUT_MS,
-  Qwen,
+  REQUEST_TIMEOUT_MS
 } from "@/constant";
-import { ModelType, useAccessStore, useAppConfig, useChatStore } from "@/store";
+import { useAccessStore, useAppConfig, useChatStore } from "@/store";
 import {
   getMessageTextContent,
   isVisionModel,
 } from "@/utils";
-import { prettyObject } from "@/utils/format";
 import { getClientConfig } from "@/config/client";
-import Locale from "@/locales";
 
 export const ROLES = ["system", "user", "assistant"] as const;
 
@@ -171,8 +164,6 @@ export class QwenApi implements LLMApi {
         let remainText = "";
         let finished = false;
 
-        let existingTexts: string[] = [];
-
         // animate response to make it looks smooth
         function animateResponseText() {
           if (finished || controller.signal.aborted) {
@@ -204,64 +195,59 @@ export class QwenApi implements LLMApi {
 
         controller.signal.onabort = finish;
 
-        console.log("[path=====>] ", path, chatPayload)
-
         fetch(path, chatPayload).then((response) => {
           const reader = response?.body?.getReader();
           const decoder = new TextDecoder();
-          let partialData = "";
 
           return reader?.read().then(function processText({
             done,
             value,
           }): Promise<any> {
             if (done) {
-              console.log("JSON.parse(partialData)", response)
               if (response.status !== 200) {
                 try {
-                  let data = JSON.parse(partialData);
-                  if (data && data[0].error) {
-                    options.onError?.(new Error(data[0].error.message));
-                  } else {
-                    options.onError?.(new Error("Request failed"));
-                  }
+                  options.onError?.(new Error("Request failed"));
                 } catch (_) {
                   options.onError?.(new Error("Request failed"));
                 }
               }
 
-              console.log("Stream complete");
-              // options.onFinish(responseText + remainText);
+              options.onFinish(responseText + remainText);
               finished = true;
               return Promise.resolve();
             }
 
-            partialData += decoder.decode(value, { stream: true });
-
             try {
-              const resultText = getResult(partialData);
-              console.log("qwen data", resultText);
+              const tt = decoder.decode(value, { stream: true });
 
-              // const textArray = data.reduce(
-              //   (acc: string[], item: { candidates: any[] }) => {
-              //     const texts = item.candidates.map((candidate) =>
-              //       candidate.content.parts
-              //         .map((part: { text: any }) => part.text)
-              //         .join(""),
-              //     );
-              //     return acc.concat(texts);
-              //   },
-              //   [],
-              // );
 
-              // if (resultText.length > existingTexts.length) {
-              //   const deltaArray = textArray.slice(existingTexts.length);
-              //   existingTexts = textArray;
-              //   remainText += deltaArray.join("");
-              // }
+              const resultText = getResult(tt);
+
+              // 错误中断
+              if (['InternalError', 'InvalidParameter'].includes(resultText.code)) {
+                // options.onError?.(new Error("Invalid Parameter"));
+                options.onFinish(remainText + resultText?.message || 'error');
+                finished = true;
+                return Promise.resolve();
+              }
+
+              if (isMultiModal(modelConfig.model)) {
+                const { finish_reason, message = {} } = resultText?.output?.choices[0];
+
+                if (/* finish_reason !== 'stop' &&  */message['content'][0]?.text) {
+                  remainText += message['content'][0]?.text;
+                }
+              } else {
+                const { text, finish_reason } = resultText?.output;
+
+                if (text && finish_reason !== "stop") {
+                  remainText += text
+                }
+              }
+
+
             } catch (error) {
-              console.log("[Response Animation] error: ", error, partialData);
-              // skip error message when parsing json
+              console.log("[Response Animation] error: ", error);
             }
 
             return reader.read().then(processText);
@@ -269,93 +255,6 @@ export class QwenApi implements LLMApi {
         }).catch((error) => {
           console.error("Error:", error);
         });
-
-        // fetchEventSource(path, {
-        //   ...chatPayload,
-        //   openWhenHidden: true,
-        //   async onopen(res) {
-        //     clearTimeout(requestTimeoutId);
-        //     const contentType = res.headers.get("content-type");
-        //     console.log(
-        //       "[Qwen] request response content type: ",
-        //       res,
-        //     );
-
-        //     if (contentType?.startsWith("text/plain")) {
-        //       responseText = await res.clone().text();
-        //       return finish();
-        //     }
-
-        //     console.log("[Qwen] response", res)
-
-        //     if (
-        //       !res.ok ||
-        //       !res.headers
-        //         .get("content-type")
-        //         ?.startsWith(EventStreamContentType) ||
-        //       res.status !== 200
-        //     ) {
-        //       const responseTexts = [responseText];
-        //       let extraInfo = await res.clone().text();
-        //       try {
-        //         const resJson = await res.clone().json();
-        //         extraInfo = prettyObject(resJson);
-        //       } catch { }
-
-        //       if (res.status === 401) {
-        //         responseTexts.push(Locale.Error.Unauthorized);
-        //       }
-
-        //       if (extraInfo) {
-        //         responseTexts.push(extraInfo);
-        //       }
-
-        //       responseText = responseTexts.join("\n\n");
-
-        //       return finish();
-        //     }
-        //   },
-        //   onmessage(msg) {
-        //     if (msg.data === "[DONE]" || finished) {
-        //       return finish();
-        //     }
-        //     const text = msg.data;
-        //     try {
-        //       const json = JSON.parse(text);
-        //       const choices = json.choices as Array<{
-        //         delta: { content: string };
-        //       }>;
-        //       const delta = choices[0]?.delta?.content;
-        //       const textmoderation = json?.prompt_filter_results;
-
-        //       if (delta) {
-        //         remainText += delta;
-        //       }
-
-        //       // if (
-        //       //   textmoderation &&
-        //       //   textmoderation.length > 0 &&
-        //       //   ServiceProvider.Azure
-        //       // ) {
-        //       //   const contentFilterResults =
-        //       //     textmoderation[0]?.content_filter_results;
-        //       //   console.log(
-        //       //     `[${ServiceProvider.Azure}] [Text Moderation] flagged categories result:`,
-        //       //     contentFilterResults,
-        //       //   );
-        //       // }
-        //     } catch (e) {
-        //       console.error("[Request] parse error", text, msg);
-        //     }
-        //   },
-        //   onclose() {
-        //     finish();
-        //   },
-        //   onerror(e) {
-        //     options.onError?.(e);
-        //     throw e;
-        //   },
-        // })
       } else {
         const res = await fetch(path, chatPayload);
         clearTimeout(requestTimeoutId);
@@ -404,13 +303,6 @@ export class QwenApi implements LLMApi {
 
     return `${baseUrl}${path}`;
   }
-}
-
-function ensureProperEnding(str: string) {
-  if (str.startsWith("[") && !str.endsWith("]")) {
-    return str + "]";
-  }
-  return str;
 }
 
 function getResult(resultText: string) {

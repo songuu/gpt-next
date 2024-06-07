@@ -1,7 +1,6 @@
 import { getClientConfig } from "@/config/client";
 import {
   ACCESS_CODE_PREFIX,
-  Azure,
   ModelProvider,
   ServiceProvider,
 } from "@/constant";
@@ -17,8 +16,9 @@ export const Models = ["gpt-3.5-turbo", "gpt-4"] as const;
 export type ChatModel = ModelType;
 
 export interface MultimodalContent {
-  type: "text" | "image_url";
+  type?: "text" | "image_url";
   text?: string;
+  image?: string;
   image_url?: {
     url: string;
   };
@@ -27,6 +27,7 @@ export interface MultimodalContent {
 export interface RequestMessage {
   role: MessageRole;
   content: string | MultimodalContent[];
+  model: string;
 }
 
 export interface LLMConfig {

@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+
+import { disabledImgModels, qwenModels } from './constant'
 import { showToast } from "./components/ui-lib";
 import Locale from "./locales";
 import { RequestMessage } from "./client/api";
@@ -282,6 +284,9 @@ export function getMessageImages(message: RequestMessage): string[] {
   }
   const urls: string[] = [];
   for (const c of message.content) {
+    if (qwenModels.includes(message.model) && Reflect.has(c, 'image')) {
+      urls.push(c.image as string)
+    }
     if (c.type === "image_url") {
       urls.push(c.image_url?.url ?? "");
     }
@@ -290,9 +295,6 @@ export function getMessageImages(message: RequestMessage): string[] {
 }
 
 export function isVisionModel(model: string) {
-  
-  // Note: This is a better way using the TypeScript feature instead of `&&` or `||` (ts v5.5.0-dev.20240314 I've been using)
-
   const visionKeywords = [
     "vision",
     "claude-3",
@@ -302,5 +304,5 @@ export function isVisionModel(model: string) {
 
   const isGpt4Turbo = model.includes("gpt-4-turbo") && !model.includes("preview");
 
-  return visionKeywords.some((keyword) => model.includes(keyword)) || isGpt4Turbo;
+  return (visionKeywords.some((keyword) => model.includes(keyword)) && !disabledImgModels.includes(model)) || isGpt4Turbo;
 }
