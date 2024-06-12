@@ -9,6 +9,7 @@ import { ChatGPTApi } from "./platforms/openai";
 import { GeminiProApi } from "./platforms/google";
 import { ClaudeApi } from "./platforms/anthropic";
 import { QwenApi } from "./platforms/qwen";
+import { SparkApi } from "./platforms/spark";
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
@@ -72,7 +73,7 @@ export abstract class LLMApi {
   abstract models(): Promise<LLMModel[]>;
 }
 
-type ProviderName = "openai" | "azure" | "claude" | "palm" | "qwen";
+type ProviderName = "openai" | "azure" | "claude" | "palm" | "qwen" | "spark";
 
 interface Model {
   name: string;
@@ -106,6 +107,9 @@ export class ClientApi {
         break;
       case ModelProvider.Qwen:
         this.llm = new QwenApi();
+        break;
+      case ModelProvider.Spark:
+        this.llm = new SparkApi();
         break;
       default:
         this.llm = new ChatGPTApi();
@@ -167,12 +171,14 @@ export function getHeaders() {
   const isGoogle = modelConfig.model.startsWith("gemini");
   const isAzure = accessStore.provider === ServiceProvider.Azure;
   const isQwen = accessStore.provider === ServiceProvider.Qwen;
+  const isSpark = accessStore.provider === ServiceProvider.Spark;
   const authHeader = isAzure ? "api-key" : isQwen ? "api_key" : "Authorization";
   const apiKey = isGoogle
     ? accessStore.googleApiKey
     : isAzure
       ? accessStore.azureApiKey :
-      isQwen ? accessStore.qwenApiKey
+      isQwen ? accessStore.qwenApiKey:
+      isSpark? accessStore.sparkApiKey
         : accessStore.openaiApiKey;
   const clientConfig = getClientConfig();
   const makeBearer = (s: string) => `${isAzure ? "" : "Bearer "}${s.trim()}`;

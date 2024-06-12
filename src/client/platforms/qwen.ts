@@ -46,7 +46,6 @@ interface RequestPayload {
 import {
   LLMApi,
   LLMModel,
-  LLMUsage,
   getHeaders
 } from "../api";
 
@@ -100,7 +99,7 @@ export class QwenApi implements LLMApi {
   async chat(options: ChatOptions) {
     const visionModel = isVisionModel(options.config.model);
 
-    const messages = options.messages.map((v) => ({
+    const messages = options.messages.map((v: any) => ({
       role: v.role,
       content: visionModel ? v.content : getMessageTextContent(v),
     }));

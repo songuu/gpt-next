@@ -16,6 +16,8 @@ export const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/";
 
 export const QWEN_BASE_URL = "https://dashscope.aliyuncs.com/"
 
+export const SPARK_BASE_URL = "spark-api.xf-yun.com";
+
 export enum Path {
   Home = "/",
   Chat = "/chat",
@@ -28,11 +30,18 @@ export enum Path {
   Logout = '/logout'
 }
 
+export const SparkApiPath: Record<string, string> = {
+  general: '/v1.1/chat',
+  generalv2: '/v2.1/chat',
+  generalv3: '/v3.1/chat',
+  'generalv3.5': '/v3.5/chat',
+}
+
 export enum ApiPath {
   Cors = "",
   OpenAI = "/api/openai",
   Anthropic = "/api/anthropic",
-  Qwen = '/api/qwen'
+  Qwen = '/api/qwen',
 }
 
 export enum SlotID {
@@ -76,14 +85,16 @@ export enum ServiceProvider {
   Azure = "Azure",
   Google = "Google",
   Anthropic = "Anthropic",
-  Qwen = "Qwen"
+  Qwen = "Qwen",
+  Spark = "Spark"
 }
 
 export enum ModelProvider {
   GPT = "GPT",
   GeminiPro = "GeminiPro",
   Claude = "Claude",
-  Qwen = "Qwen"
+  Qwen = "Qwen",
+  Spark = "Spark"
 }
 
 export const Anthropic = {
@@ -111,6 +122,11 @@ export const Google = {
 
 export const Qwen = {
   ExampleEndpoint: "https://dashscope.aliyuncs.com/api/",
+  ChatPath: ''
+}
+
+export const Spark = {
+  ExampleEndpoint: "wss://spark-api.xf-yun.com",
   ChatPath: ''
 }
 
@@ -215,6 +231,13 @@ export const qwenModels = [
   ...qwenModels2
 ]
 
+export const sparkModels = [
+  'general',
+  'generalv2',
+  'generalv3',
+  'generalv3.5'
+]
+
 export const DEFAULT_MODELS = [
   ...openaiModels.map((name) => ({
     name,
@@ -250,6 +273,15 @@ export const DEFAULT_MODELS = [
       id: "qwen",
       providerName: "Qwen",
       providerType: "qwen"
+    }
+  })),
+  ...sparkModels.map((name) => ({
+    name,
+    available: true,
+    provider: {
+      id: "spark",
+      providerName: "Spark",
+      providerType: "spark"
     }
   }))
 ] as const;

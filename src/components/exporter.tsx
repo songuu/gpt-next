@@ -317,6 +317,8 @@ export function PreviewActions(props: {
       api = new ClientApi(ModelProvider.GeminiPro);
     } else if (config.modelConfig.model.startsWith("qwen")) {
       api = new ClientApi(ModelProvider.Qwen);
+    } else if (config.modelConfig.model.startsWith("general")) {
+      api = new ClientApi(ModelProvider.Spark);
     } else if (identifyDefaultClaudeModel(config.modelConfig.model)) {
       api = new ClientApi(ModelProvider.Claude);
     } else {

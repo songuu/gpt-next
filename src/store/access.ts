@@ -46,6 +46,11 @@ const DEFAULT_ACCESS_STATE = {
   qwenUrl: "https://dashscope.aliyuncs.com",
   qwenApiKey: "",
 
+  // spark
+  sparkAppId: '',
+  sparkApiKey: '',
+  sparkSecret: '',
+
   // server config
   needCode: true,
   hideUserApiKey: false,
