@@ -91,6 +91,10 @@ export const useAccessStore = createPersistStore(
       return ensure(get(), ['qwenUrl', 'qwenApiKey'])
     },
 
+    isValidSpark() {
+      return ensure(get(), ['sparkAppId', 'sparkApiKey', 'sparkSecret'])
+    },
+
     isAuthorized() {
       this.fetch();
 
@@ -101,6 +105,7 @@ export const useAccessStore = createPersistStore(
         this.isValidGoogle() ||
         this.isValidAnthropic() ||
         this.isValidQwen() ||
+        this.isValidSpark() ||
         !this.enabledAccessControl() ||
         (this.enabledAccessControl() && ensure(get(), ["accessCode"]))
       );

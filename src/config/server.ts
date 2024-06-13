@@ -38,6 +38,13 @@ declare global {
       // qianwen
       QWEN_URL?: string;
       QWEN_API_KEY?: string;
+
+      // spark
+      SPARK_API_KEY?: string;
+
+      SPARKAPPID?: string;
+
+      SPARKSECRET?: string;
     }
   }
 }
@@ -93,6 +100,7 @@ export const getServerSideConfig = () => {
   const isGoogle = !!process.env.GOOGLE_API_KEY;
   const isAnthropic = !!process.env.ANTHROPIC_API_KEY;
   const isQwen = !!process.env.QWEN_API_KEY;
+  const isSpark = !!process.env.SPARK_API_KEY;
 
   // const apiKeyEnvVar = process.env.OPENAI_API_KEY ?? "";
   // const apiKeys = apiKeyEnvVar.split(",").map((v) => v.trim());
@@ -128,6 +136,11 @@ export const getServerSideConfig = () => {
     isQwen,
     qwenApiKey: getApiKey(process.env.QWEN_API_KEY),
     qwenUrl: process.env.QWEN_URL,
+
+    isSpark,
+    sparkAppId: process.env.SPARKAPPID,
+    sparkApiKey: getApiKey(process.env.SPARK_API_KEY),
+    sparkSecret: process.env.SPARKSECRET,
 
     gtmId: process.env.GTM_ID,
 

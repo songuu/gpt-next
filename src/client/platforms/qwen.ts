@@ -122,17 +122,7 @@ export class QwenApi implements LLMApi {
       parameters: {
         incremental_output: true,
       },
-    };
-
-    const accessStore = useAccessStore.getState();
-
-    let baseUrl = "";
-
-    if (accessStore.useCustomConfig) {
-      baseUrl = accessStore.qwenUrl;
     }
-
-    const isApp = !!getClientConfig()?.isApp;
 
     let shouldStream = !!options.config.stream;
     const controller = new AbortController();
@@ -141,10 +131,7 @@ export class QwenApi implements LLMApi {
     try {
       const path = this.path(modelConfig.model);
 
-      if (isApp) {
-        baseUrl += `?key=${accessStore.qwenApiKey}`;
-      }
-
+      console.log("parth", path)
       const chatPayload = {
         method: "POST",
         body: JSON.stringify(requestPayload),

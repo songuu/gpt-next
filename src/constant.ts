@@ -42,6 +42,7 @@ export enum ApiPath {
   OpenAI = "/api/openai",
   Anthropic = "/api/anthropic",
   Qwen = '/api/qwen',
+  Spark = '/api/spark'
 }
 
 export enum SlotID {

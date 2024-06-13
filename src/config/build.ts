@@ -37,7 +37,7 @@ export const getBuildConfig = () => {
     version,
     ...commitInfo,
     buildMode,
-    isApp,
+    isApp
   };
 };
 
