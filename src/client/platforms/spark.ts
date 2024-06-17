@@ -1,12 +1,12 @@
 "use client";
-import CryptoJS, { mode } from 'crypto-js'
+import CryptoJS from 'crypto-js'
 import {
   SparkApiPath,
   SPARK_BASE_URL,
   ApiPath,
   DEFAULT_API_HOST,
 } from "@/constant";
-import { useAccessStore, useAppConfig, useChatStore } from "@/store";
+import { useAppConfig, useChatStore } from "@/store";
 import {
   getMessageTextContent,
   isVisionModel,
@@ -28,7 +28,6 @@ export interface MultimodalContent {
 import {
   LLMApi,
   LLMModel,
-  LLMUsage,
   getHeaders
 } from "../api";
 
@@ -46,7 +45,6 @@ export interface LLMConfig {
   frequency_penalty?: number;
 }
 
-
 export interface ChatOptions {
   messages: RequestMessage[];
   config: LLMConfig;
@@ -57,15 +55,23 @@ export interface ChatOptions {
   onController?: (controller: AbortController) => void;
 }
 
+let socket: any = null;
+let configs: any = null;
 
 export class SparkApi implements LLMApi {
-  #socket: any = null;
-  #config: any = null;
+  // private socket: any = null;
+  // private config: any = null;
+  private options: any = null;
 
+  private responseText: string = "";
+  private remainText: string = "";
+  private finished: boolean = false;
+
+  //  初始化需要传递，因为第一次链接上socket时，需要传递
   constructor() {
-    console.log("init spark api", this.#socket)
-    if (!this.#socket) {
-      this.#connect();
+    console.log("init spark api", socket)
+    if (!socket) {
+      this.connect();
     }
   }
 
@@ -74,8 +80,12 @@ export class SparkApi implements LLMApi {
   }
 
   async chat(options: ChatOptions) {
-    console.log("this.#config", this.#config)
-    if (!this.#socket) return options.onError?.(new Error("reconnected please try again"));
+    this.options = options;
+    if (!socket) {
+      // return options.onError?.(new Error("reconnected please try again"));
+      this.connect();
+      return;
+    }
     const visionModel = isVisionModel(options.config.model);
 
     const messages = options.messages.map((v: any) => ({
@@ -92,7 +102,7 @@ export class SparkApi implements LLMApi {
 
     const requestPayload: any = {
       header: {
-        app_id: this.#config.sparkAppId,
+        app_id: configs.sparkAppId,
         uid: "fd3f47e40d",
       },
       parameter: {
@@ -107,7 +117,7 @@ export class SparkApi implements LLMApi {
       }
     }
 
-    this.#socket.send(JSON.stringify(requestPayload))
+    this.handleSend(JSON.stringify(requestPayload))
     try {
     } catch (err) { }
   }
@@ -121,7 +131,7 @@ export class SparkApi implements LLMApi {
   }
 
   async path(model: string): Promise<any> {
-    console.log("config", this.#config, model)
+    console.log("config", configs, model)
     const baseUrl: string = SPARK_BASE_URL;
     let subPath: string = SparkApiPath[model];
     const path = `${baseUrl}${subPath}`;
@@ -135,18 +145,48 @@ export class SparkApi implements LLMApi {
       const algorithm = 'hmac-sha256'
       const headers = 'host date request-line'
       const signatureOrigin = `host: ${host}\ndate: ${date}\nGET ${subPath} HTTP/1.1`
-      const signatureSha = CryptoJS.HmacSHA256(signatureOrigin, this.#config.sparkSecret)
+      const signatureSha = CryptoJS.HmacSHA256(signatureOrigin, configs.sparkSecret)
       const signature = CryptoJS.enc.Base64.stringify(signatureSha)
-      const authorizationOrigin = `api_key="${this.#config.sparkApiKey}", algorithm="${algorithm}", headers="${headers}", signature="${signature}"`
+      const authorizationOrigin = `api_key="${configs.sparkApiKey}", algorithm="${algorithm}", headers="${headers}", signature="${signature}"`
       const authorization = btoa(authorizationOrigin)
       url = `${url}?authorization=${authorization}&date=${date}&host=${host}`
       resolve(url)
     })
   }
 
-  async #onmessage() { }
+  async onmessage(e: any) {
+    try {
+      const resultData = e.data;
+      const jsonData = JSON.parse(resultData);
+      if (jsonData.header.code === 0) {
+        const msg = this.getContent(jsonData);
+        console.log("Got message", msg);
+        if (jsonData.header.status === 2) {
+          console.log("API response finished");
+          this.finished = true;
+          socket.close();
+          if (this.options && this.options?.onFinish) {
+            this.options?.onFinish(this.remainText + msg || 'error');
+          }
+          return Promise.resolve();
+        }
 
-  async #connect() {
+        this.remainText += msg;
+      } else {
+        const error = new Error(
+          `${jsonData.header.code}:${jsonData.header.message}`,
+        );
+        console.error("API error:", error);
+        Promise.reject(error);
+      }
+    } catch (e) {
+      console.error("Handle message exception:", e);
+      Promise.reject(e);
+    }
+  }
+
+  async connect() {
+    this.resetData();
     // soccket 逻辑处理
     console.log("connect spark api")
     let baseUrl: string = "";
@@ -169,7 +209,7 @@ export class SparkApi implements LLMApi {
     const resJson = await res.json();
 
     if (resJson) {
-      this.#config = resJson;
+      configs = resJson;
     }
     const modelConfig = {
       ...useAppConfig.getState().modelConfig,
@@ -177,23 +217,22 @@ export class SparkApi implements LLMApi {
     }
 
     const url = await this.path(modelConfig.model);
-    // wss://spark-api.xf-yun.comundefined?authorization=YXBpX2tleT0iMTFlNmQ0MWM1Y2IxN2Q0ODQxZDkzY2MzYzM5NDQ4OTEiLCBhbGdvcml0aG09ImhtYWMtc2hhMjU2IiwgaGVhZGVycz0iaG9zdCBkYXRlIHJlcXVlc3QtbGluZSIsIHNpZ25hdHVyZT0iNUJwVmNuZm5nWkxzV0R1WVhPU1NJaGliOG5BKzJqYTNSa0kxTlpkS2kwdz0i&date=Thu, 13 Jun 2024 09:18:06 GMT&host=localhost:3000
     console.log("url", url)
     if ('WebSocket' in window) {
-      this.#socket = new WebSocket(url)
+      socket = new WebSocket(url)
     } else if ('MozWebSocket' in window) {
       // @ts-ignore
-      this.#socket = new MozWebSocket(url)
+      socket = new MozWebSocket(url)
     } else {
       alert('浏览器不支持WebSocket')
       return
     }
 
-    this.#socket.onerror = (e) => {
+    socket.onerror = (e) => {
       console.error("WebSocket error:", e);
     }
 
-    this.#socket.onopen = () => {
+    socket.onopen = () => {
       console.log("WebSocket open");
       // 连接成功就发送历史消息
       const recentMessages = useChatStore.getState().getMessagesWithMemory();
@@ -202,12 +241,84 @@ export class SparkApi implements LLMApi {
         messages: recentMessages,
         config: { ...modelConfig, stream: true },
       })
+
+      this.animateResponseText();
     };
-    this.#socket.onclose = () => {
+    socket.onclose = () => {
       console.log("WebSocket close");
+      this.resetData();
     };
-    this.#socket.onmessage = (e) => {
-      console.log("onmessage", e)
+    socket.onmessage = (e: any) => {
+      // console.log("onmessage", e)
+      this.onmessage(e)
     }
   }
+
+  getContent(jsonData: any) {
+    let content = "";
+    try {
+      if (jsonData.header.code === 0) {
+        for (const choice of jsonData.payload.choices.text) {
+          content += choice.content;
+        }
+      }
+    } catch (e) {
+      console.error("Get content error:", e);
+    }
+    return content;
+  }
+
+  resetData() {
+    this.finished = false;
+    this.remainText = '';
+    this.responseText = '';
+  }
+
+  // 提供给外部的结束socket连接
+  closeSocket() {
+    if (socket) {
+      socket.close()
+    }
+  }
+
+  animateResponseText() {
+    // console.log("this?.remainText", this?.remainText, this?.finished)
+    if (this?.finished) {
+      this.responseText += this.remainText;
+      this.finish();
+      return;
+    }
+
+    if (this?.remainText.length > 0) {
+      const fetchCount = Math.max(1, Math.round(this.remainText.length / 60));
+      const fetchText = this.remainText.slice(0, fetchCount);
+      this.responseText += fetchText;
+      this.remainText = this.remainText.slice(fetchCount);
+      if (this.options) {
+        this.options.onUpdate?.(this.responseText, fetchText);
+      }
+    }
+
+    window.requestAnimationFrame(this?.animateResponseText.bind(this));
+  }
+
+  finish() {
+    if (!this.finished) {
+      this.finished = true;
+      this.options.onFinish(this.responseText + this.remainText);
+    }
+  };
+
+  async handleSend(message: any) {
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(message);
+    } else {
+      try {
+        await new Promise(resolve => setTimeout(resolve, 100)); // 等待一段时间以确保连接打开
+        socket.send(message);
+      } catch (err) {
+        console.error("Failed to send message due to connection issue", err);
+      }
+    }
+  };
 }

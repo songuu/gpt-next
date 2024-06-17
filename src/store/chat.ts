@@ -357,7 +357,7 @@ export const useChatStore = createPersistStore(
           mContent = mContent.concat(
             attachImages.map((url) => {
               return {
-                ...(isQwen && { image: "https://broadscope-dialogue.oss-cn-beijing.aliyuncs.com/upload/20240607/79b66a57d9416accc597cbee50da56f6/30d98186399d4f63bfbaa082c9c0fe9a/%E5%9F%8E%E5%A0%A11.jpg?Expires=1749264486&OSSAccessKeyId=LTAI5t6Lw1UpPMCpnvqL2Syt&Signature=6Y5rLr%2FL8cdIVCydQ0m0Pp5Dbp8%3D" }),
+                ...(isQwen && { image: url }),
                 ...(!isQwen && {
                   type: "image_url", image_url: {
                     url: url
