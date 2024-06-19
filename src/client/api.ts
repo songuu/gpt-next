@@ -9,7 +9,7 @@ import { ChatGPTApi } from "./platforms/openai";
 import { GeminiProApi } from "./platforms/google";
 import { ClaudeApi } from "./platforms/anthropic";
 import { QwenApi } from "./platforms/qwen";
-import { SparkApi } from "./platforms/spark";
+import { SparkApiIns } from "./platforms/spark";
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
@@ -109,7 +109,7 @@ export class ClientApi {
         this.llm = new QwenApi();
         break;
       case ModelProvider.Spark:
-        this.llm = new SparkApi();
+        this.llm = SparkApiIns;
         break;
       default:
         this.llm = new ChatGPTApi();
@@ -177,9 +177,9 @@ export function getHeaders() {
     ? accessStore.googleApiKey
     : isAzure
       ? accessStore.azureApiKey :
-      isQwen ? accessStore.qwenApiKey:
-      isSpark? accessStore.sparkApiKey
-        : accessStore.openaiApiKey;
+      isQwen ? accessStore.qwenApiKey :
+        isSpark ? accessStore.sparkApiKey
+          : accessStore.openaiApiKey;
   const clientConfig = getClientConfig();
   const makeBearer = (s: string) => `${isAzure ? "" : "Bearer "}${s.trim()}`;
   const validString = (x: string) => x && x.length > 0;

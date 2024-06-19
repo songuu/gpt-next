@@ -432,6 +432,7 @@ export const useChatStore = createPersistStore(
             ChatControllerPool.remove(session.id, botMessage.id);
           },
           onError(error) {
+            console.log("EEEEE", error)
             const isAborted = error.message.includes("aborted");
             botMessage.content +=
               "\n\n" +
