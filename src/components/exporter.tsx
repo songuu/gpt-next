@@ -319,6 +319,8 @@ export function PreviewActions(props: {
       api = new ClientApi(ModelProvider.Qwen);
     } else if (config.modelConfig.model.startsWith("general")) {
       api = new ClientApi(ModelProvider.Spark);
+    } else if (config.modelConfig.model.startsWith("ERNIE")) {
+      api = new ClientApi(ModelProvider.Qianfan)
     } else if (identifyDefaultClaudeModel(config.modelConfig.model)) {
       api = new ClientApi(ModelProvider.Claude);
     } else {

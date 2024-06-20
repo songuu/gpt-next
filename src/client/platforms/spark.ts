@@ -26,7 +26,6 @@ export interface MultimodalContent {
 
 import {
   LLMApi,
-  LLMModel,
   getHeaders
 } from "../api";
 

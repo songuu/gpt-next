@@ -101,6 +101,7 @@ export const getServerSideConfig = () => {
   const isAnthropic = !!process.env.ANTHROPIC_API_KEY;
   const isQwen = !!process.env.QWEN_API_KEY;
   const isSpark = !!process.env.SPARK_API_KEY;
+  const isQianfan = !!process.env.QIANFANACCESS;
 
   // const apiKeyEnvVar = process.env.OPENAI_API_KEY ?? "";
   // const apiKeys = apiKeyEnvVar.split(",").map((v) => v.trim());
@@ -141,6 +142,10 @@ export const getServerSideConfig = () => {
     sparkAppId: process.env.SPARKAPPID,
     sparkApiKey: getApiKey(process.env.SPARK_API_KEY),
     sparkSecret: process.env.SPARKSECRET,
+
+    isQianfan,
+    qianfanAccess: getApiKey(process.env.QIANFANACCESS),
+    qianfanSecret: process.env.QIANFANSECRET,
 
     gtmId: process.env.GTM_ID,
 

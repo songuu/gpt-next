@@ -1,4 +1,5 @@
 export function prettyObject(msg: any) {
+  console.log("msd", msg)
   const obj = msg;
   if (typeof msg !== "string") {
     msg = JSON.stringify(msg, null, "  ");

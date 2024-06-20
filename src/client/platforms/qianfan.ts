@@ -1,10 +1,12 @@
 "use client";
 import {
+  QIANFAN_BASE_URL,
   ApiPath,
   DEFAULT_API_HOST,
-  REQUEST_TIMEOUT_MS
+  REQUEST_TIMEOUT_MS,
+  qianfanModelsPaths
 } from "@/constant";
-import { useAccessStore, useAppConfig, useChatStore } from "@/store";
+import { useAppConfig, useChatStore, useAccessStore } from "@/store";
 import {
   getMessageTextContent,
   isVisionModel,
@@ -12,52 +14,7 @@ import {
 import { getClientConfig } from "@/config/client";
 
 export const ROLES = ["system", "user", "assistant"] as const;
-
 export type MessageRole = (typeof ROLES)[number];
-
-export function isMultiModal(model: string): boolean {
-  return model.startsWith('qwen-vl');
-}
-
-export function getCompletionCreateEndpoint(model: string) {
-  return isMultiModal(model)
-    ? '/services/aigc/multimodal-generation/generation'
-    : '/services/aigc/text-generation/generation';
-}
-
-interface RequestPayload {
-  stream?: boolean;
-  model: string;
-  temperature: number;
-  presence_penalty?: number;
-  frequency_penalty?: number;
-  top_p: number;
-  max_tokens?: number;
-  __binaryResponse?: boolean;
-  parameters?: any;
-  input: {
-    messages: {
-      role: "system" | "user" | "assistant";
-      content: string | MultimodalContent[];
-    }[];
-  }
-}
-
-import {
-  LLMApi,
-  LLMModel,
-  getHeaders
-} from "../api";
-
-function trimEnd(s: string, end = " ") {
-  if (end.length === 0) return s;
-
-  while (s.endsWith(end)) {
-    s = s.slice(0, -end.length);
-  }
-
-  return s;
-}
 
 export interface MultimodalContent {
   type: "text" | "image_url";
@@ -66,6 +23,12 @@ export interface MultimodalContent {
     url: string;
   };
 }
+
+import {
+  LLMApi,
+  LLMModel,
+  getHeaders
+} from "../api";
 
 export interface RequestMessage {
   role: MessageRole;
@@ -91,11 +54,37 @@ export interface ChatOptions {
   onController?: (controller: AbortController) => void;
 }
 
-export class QwenApi implements LLMApi {
-  extractMessage(res: any) {
-    return res.choices?.at(0)?.message?.content ?? "";
+interface RequestPayload {
+  stream?: boolean;
+  model: string;
+  temperature: number;
+  presence_penalty?: number;
+  frequency_penalty?: number;
+  top_p: number;
+  max_tokens?: number;
+  __binaryResponse?: boolean;
+  parameters?: any;
+  messages: {
+    role: "system" | "user" | "assistant";
+    content: string | MultimodalContent[];
+  }[];
+}
+
+function trimEnd(s: string, end = " ") {
+  if (end.length === 0) return s;
+
+  while (s.endsWith(end)) {
+    s = s.slice(0, -end.length);
   }
 
+  return s;
+}
+
+export function getCompletionCreateEndpoint(model: string) {
+  return ""
+}
+
+export class QianfanApi implements LLMApi {
   async chat(options: ChatOptions) {
     const visionModel = isVisionModel(options.config.model);
 
@@ -112,16 +101,11 @@ export class QwenApi implements LLMApi {
       },
     };
     const requestPayload: RequestPayload = {
-      input: { messages },
+      messages: messages,
       stream: options.config.stream,
       model: modelConfig.model,
       temperature: modelConfig.temperature,
-      presence_penalty: modelConfig.presence_penalty,
       top_p: modelConfig.top_p,
-      __binaryResponse: true,
-      parameters: {
-        incremental_output: true,
-      },
     }
 
     let shouldStream = !!options.config.stream;
@@ -130,15 +114,12 @@ export class QwenApi implements LLMApi {
 
     try {
       const path = this.path(modelConfig.model);
-
       const chatPayload = {
         method: "POST",
         body: JSON.stringify(requestPayload),
         signal: controller.signal,
         headers: getHeaders(),
       };
-
-      // make a fetch request
       const requestTimeoutId = setTimeout(
         () => controller.abort(),
         REQUEST_TIMEOUT_MS,
@@ -181,65 +162,7 @@ export class QwenApi implements LLMApi {
         controller.signal.onabort = finish;
 
         fetch(path, chatPayload).then((response) => {
-          const reader = response?.body?.getReader();
-          const decoder = new TextDecoder();
-
-          return reader?.read().then(function processText({
-            done,
-            value,
-          }): Promise<any> {
-            if (done) {
-              if (response.status !== 200) {
-                try {
-                  options.onError?.(new Error("Request failed"));
-                } catch (_) {
-                  options.onError?.(new Error("Request failed"));
-                }
-              }
-
-              options.onFinish(responseText + remainText);
-              finished = true;
-              return Promise.resolve();
-            }
-
-            try {
-              const tt = decoder.decode(value, { stream: true });
-
-
-              const resultText = getResult(tt);
-
-              // 错误中断
-              if (['InternalError', 'InvalidParameter'].includes(resultText.code)) {
-                // options.onError?.(new Error("Invalid Parameter"));
-                options.onFinish(remainText + resultText?.message || 'error');
-                finished = true;
-                return Promise.resolve();
-              }
-
-              if (isMultiModal(modelConfig.model)) {
-                const { finish_reason, message = {} } = resultText?.output?.choices[0];
-
-                if (/* finish_reason !== 'stop' &&  */message['content'][0]?.text) {
-                  remainText += message['content'][0]?.text;
-                }
-              } else {
-                const { text, finish_reason } = resultText?.output;
-
-                if (text && finish_reason !== "stop") {
-                  remainText += text
-                }
-              }
-
-
-            } catch (error) {
-              console.log("[Response Animation] error: ", error);
-            }
-
-            return reader.read().then(processText);
-          })
-        }).catch((error) => {
-          console.error("Error:", error);
-        });
+        }).catch((error) => { });
       } else {
         const res = await fetch(path, chatPayload);
         clearTimeout(requestTimeoutId);
@@ -248,8 +171,7 @@ export class QwenApi implements LLMApi {
         const message = this.extractMessage(resJson);
         options.onFinish(message);
       }
-
-    } catch (err) { }
+    } catch (error) { }
   }
 
   async usage() {
@@ -274,8 +196,8 @@ export class QwenApi implements LLMApi {
       const isApp = !!getClientConfig()?.isApp;
 
       baseUrl = isApp
-        ? DEFAULT_API_HOST + "/api/proxy/qwen"
-        : ApiPath.Qwen;
+        ? DEFAULT_API_HOST + "/api/proxy/qianfan"
+        : ApiPath.Qianfan;
     }
 
     if (!baseUrl.startsWith("http") && !baseUrl.startsWith("/api")) {
@@ -284,18 +206,12 @@ export class QwenApi implements LLMApi {
 
     baseUrl = trimEnd(baseUrl, "/");
 
-    const path = getCompletionCreateEndpoint(model)
+    const path = qianfanModelsPaths[model] ?? "";
 
     return `${baseUrl}${path}`;
   }
-}
 
-function getResult(resultText: string) {
-  const lines = resultText.split("\n");
-  for (const line of lines) {
-    if (line.startsWith("data:")) {
-      const data = JSON.parse(line.slice(5));
-      return data;
-    }
+  extractMessage(res: any) {
+    return res.choices?.at(0)?.message?.content ?? "";
   }
 }

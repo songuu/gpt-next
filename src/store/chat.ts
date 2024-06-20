@@ -406,6 +406,8 @@ export const useChatStore = createPersistStore(
           api = new ClientApi(ModelProvider.Qwen);
         } else if (modelConfig.model.startsWith("general")) {
           api = new ClientApi(ModelProvider.Spark);
+        } else if (modelConfig.model.startsWith("ERNIE")) {
+          api = new ClientApi(ModelProvider.Qianfan)
         } else {
           api = new ClientApi(ModelProvider.GPT);
         }
@@ -595,6 +597,8 @@ export const useChatStore = createPersistStore(
           api = new ClientApi(ModelProvider.Qwen);
         } else if (modelConfig.model.startsWith("general")) {
           api = new ClientApi(ModelProvider.Spark);
+        } else if (modelConfig.model.startsWith("ERNIE")) {
+          api = new ClientApi(ModelProvider.Qianfan)
         } else if (identifyDefaultClaudeModel(modelConfig.model)) {
           api = new ClientApi(ModelProvider.Claude);
         } else {

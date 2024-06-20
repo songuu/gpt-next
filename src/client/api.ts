@@ -10,6 +10,7 @@ import { GeminiProApi } from "./platforms/google";
 import { ClaudeApi } from "./platforms/anthropic";
 import { QwenApi } from "./platforms/qwen";
 import { SparkApiIns } from "./platforms/spark";
+import { QianfanApi } from "./platforms/qianfan";
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
@@ -111,6 +112,9 @@ export class ClientApi {
       case ModelProvider.Spark:
         this.llm = SparkApiIns;
         break;
+      case ModelProvider.Qianfan:
+        this.llm = new QianfanApi();
+        break;
       default:
         this.llm = new ChatGPTApi();
         break;
@@ -161,6 +165,10 @@ export class ClientApi {
   }
 }
 
+const getApiKey = () => {
+
+}
+
 export function getHeaders() {
   const accessStore = useAccessStore.getState();
   const headers: Record<string, string> = {
@@ -172,14 +180,26 @@ export function getHeaders() {
   const isAzure = accessStore.provider === ServiceProvider.Azure;
   const isQwen = accessStore.provider === ServiceProvider.Qwen;
   const isSpark = accessStore.provider === ServiceProvider.Spark;
+  const isQianfan = accessStore.provider === ServiceProvider.Qianfan;
   const authHeader = isAzure ? "api-key" : isQwen ? "api_key" : "Authorization";
-  const apiKey = isGoogle
-    ? accessStore.googleApiKey
-    : isAzure
-      ? accessStore.azureApiKey :
-      isQwen ? accessStore.qwenApiKey :
-        isSpark ? accessStore.sparkApiKey
-          : accessStore.openaiApiKey;
+  let apiKey: string = accessStore.openaiApiKey;
+  switch (true) {
+    case isGoogle:
+      apiKey = accessStore.googleApiKey;
+      break;
+    case isAzure:
+      apiKey = accessStore.azureApiKey;
+      break;
+    case isQwen:
+      apiKey = accessStore.qwenApiKey;
+      break;
+    case isSpark:
+      apiKey = accessStore.sparkApiKey;
+      break;
+    default:
+      break;
+  }
+
   const clientConfig = getClientConfig();
   const makeBearer = (s: string) => `${isAzure ? "" : "Bearer "}${s.trim()}`;
   const validString = (x: string) => x && x.length > 0;

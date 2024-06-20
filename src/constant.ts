@@ -18,6 +18,8 @@ export const QWEN_BASE_URL = "https://dashscope.aliyuncs.com/"
 
 export const SPARK_BASE_URL = "spark-api.xf-yun.com";
 
+export const QIANFAN_BASE_URL = 'https://aip.baidubce.com'
+
 export enum Path {
   Home = "/",
   Chat = "/chat",
@@ -42,7 +44,8 @@ export enum ApiPath {
   OpenAI = "/api/openai",
   Anthropic = "/api/anthropic",
   Qwen = '/api/qwen',
-  Spark = '/api/spark'
+  Spark = '/api/spark',
+  Qianfan = '/api/qianfan'
 }
 
 export enum SlotID {
@@ -87,7 +90,8 @@ export enum ServiceProvider {
   Google = "Google",
   Anthropic = "Anthropic",
   Qwen = "Qwen",
-  Spark = "Spark"
+  Spark = "Spark",
+  Qianfan = "Qianfan"
 }
 
 export enum ModelProvider {
@@ -95,7 +99,8 @@ export enum ModelProvider {
   GeminiPro = "GeminiPro",
   Claude = "Claude",
   Qwen = "Qwen",
-  Spark = "Spark"
+  Spark = "Spark",
+  Qianfan = "Qianfan"
 }
 
 export const Anthropic = {
@@ -239,6 +244,20 @@ export const sparkModels = [
   'generalv3.5'
 ]
 
+export const qianfanModels = [
+  'ERNIE-4.0-8K',
+  'ERNIE-4.0-8K-0613',
+  'ERNIE-3.5-8K',
+  'ERNIE-3.5-128K'
+]
+
+export const qianfanModelsPaths: Record<string, string> = {
+  'ERNIE-4.0-8K': '/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions_pro',
+  'ERNIE-4.0-8K-0613': '/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-4.0-8k-0613',
+  'ERNIE-3.5-8K': '/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions',
+  'ERNIE-3.5-128K': '/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-3.5-128k'
+}
+
 export const DEFAULT_MODELS = [
   ...openaiModels.map((name) => ({
     name,
@@ -283,6 +302,15 @@ export const DEFAULT_MODELS = [
       id: "spark",
       providerName: "Spark",
       providerType: "spark"
+    }
+  })),
+  ...qianfanModels.map(name => ({
+    name,
+    available: true,
+    provider: {
+      id: "qianfan",
+      providerName: "Qianfan",
+      providerType: "qianfan"
     }
   }))
 ] as const;
