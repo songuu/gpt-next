@@ -81,6 +81,9 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
       case ModelProvider.Qwen:
         systemApiKey = serverConfig.qwenApiKey;
         break;
+      case ModelProvider.Qianfan:
+        systemApiKey = '';
+        break;
       case ModelProvider.GPT:
       default:
         if (serverConfig.isAzure) {
@@ -89,7 +92,7 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
           systemApiKey = serverConfig.apiKey;
         }
     }
-    
+
     console.log("systemApiKey===>", systemApiKey)
 
     if (systemApiKey) {

@@ -145,7 +145,7 @@ export const getServerSideConfig = () => {
 
     isQianfan,
     qianfanAccess: getApiKey(process.env.QIANFANACCESS),
-    qianfanSecret: process.env.QIANFANSECRET,
+    qianfanSecret: process.env.QIANFANSECRET || '',
 
     gtmId: process.env.GTM_ID,
 

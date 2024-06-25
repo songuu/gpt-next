@@ -2,8 +2,6 @@ import CryptoJS from 'crypto-js';
 
 import { getServerSideConfig } from "@/config/server";
 
-const HOST = ''
-
 function getTimestampString() {
   return new Date().toISOString().replace(/\.\d+/, '');
 }
@@ -31,32 +29,46 @@ function getQueryString(params: any) {
   return queryString;
 }
 
-function getAuthString(CanonicalURI: string, CanonicalQueryString: string, timestamp: string) {
+function getAuthString(CanonicalURI: string, CanonicalQueryString: string, timestamp: string, host: string = "localhost:3000") {
   const serverConfig = getServerSideConfig();
 
   const accessKey = serverConfig.qianfanAccess;
 
-  const expirationPeriodInSeconds = 120;
+  const expirationPeriodInSeconds = 1800;
 
   let authStringPrefix = `bce-auth-v1/${accessKey}/${timestamp}/${expirationPeriodInSeconds}`
 
   let signedHeaders = 'host;x-bce-date';
 
-  let canonicalHeaders = encodeURIComponent('host') + ':' + encodeURIComponent(HOST) + '\n' + encodeURIComponent('x-bce-date') + ':' + encodeURIComponent(timestamp);
+  let canonicalHeaders = encodeURIComponent('host') + ':' + encodeURIComponent(host) + '\n' + encodeURIComponent('x-bce-date') + ':' + encodeURIComponent(timestamp);
 
-  let Method = 'POST';
+  const Method = 'POST';
 
-  const canonicalRequest = Method + '\n' + CanonicalURI + '\n' + CanonicalQueryString + '\n' + canonicalHeaders;
+  const canonicalRequest = Method + '\n' + CanonicalURI + '\n' + canonicalHeaders;
 
-  // const signatureSha = CryptoJS.HmacSHA256(signatureOrigin, this.configs.sparkSecret);
-  // const signature = CryptoJS.enc.Base64.stringify(signatureSha);
-  const signingKey = CryptoJS.HmacSHA256(authStringPrefix, accessKey)
+  console.log("canonicalRequest", canonicalRequest)
+  console.log("authStringPrefix", authStringPrefix)
+
+  const signingKey = CryptoJS.HmacSHA256(accessKey, authStringPrefix)
+
+  const signingKeyToHex = signingKey.toString(CryptoJS.enc.Hex);
+  // CryptoJS.enc.Hex.stringify(signingKey)
+
+  console.log("signingKeyToHex", signingKeyToHex)
   //crypto.createHmac('sha256', accessKey).update(authStringPrefix).digest().toString('hex');
 
-  const signature = CryptoJS.enc.Hex.stringify(signingKey)
+  const signature = CryptoJS.HmacSHA256(signingKeyToHex, canonicalRequest)
+
+  const signatureToHex = CryptoJS.enc.Hex.stringify(signature)
+
+  console.log("signatureToHex", signatureToHex)
+  // CryptoJS.enc.Hex.stringify(signingKey)
   // crypto.createHmac('sha256', signingKey).update(canonicalRequest).digest().toString('hex');
 
-  return `${authStringPrefix}/${signedHeaders}/${signature}`;
+  const uu = `${authStringPrefix}/${signedHeaders}/${signatureToHex}`;
+
+  console.log("uuuuuu=>", uu)
+  return uu;
 }
 
 export {

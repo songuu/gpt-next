@@ -105,7 +105,7 @@ export class QianfanApi implements LLMApi {
       stream: options.config.stream,
       model: modelConfig.model,
       temperature: modelConfig.temperature,
-      top_p: modelConfig.top_p,
+      top_p: modelConfig.top_p
     }
 
     let shouldStream = !!options.config.stream;
@@ -162,6 +162,49 @@ export class QianfanApi implements LLMApi {
         controller.signal.onabort = finish;
 
         fetch(path, chatPayload).then((response) => {
+          const reader = response?.body?.getReader();
+          const decoder = new TextDecoder();
+
+          return reader?.read().then(function processText({
+            done,
+            value,
+          }): Promise<any> {
+            if (done) {
+              if (response.status !== 200) {
+                try {
+                  options.onError?.(new Error("Request failed"));
+                } catch (_) {
+                  options.onError?.(new Error("Request failed"));
+                }
+              }
+
+              options.onFinish(responseText + remainText);
+              finished = true;
+              return Promise.resolve();
+            }
+
+            try {
+              const tt = decoder.decode(value, { stream: true });
+
+              const resultText = getResult(tt);
+
+              if (resultText?.is_end) {
+                options.onFinish(remainText + resultText?.result || 'error');
+                finished = true;
+                return Promise.resolve();
+              }
+
+              const { result } = resultText || {};
+
+              if (result) {
+                remainText += result
+              }
+            } catch (error) {
+              console.log("[Response Animation] error: ", error);
+            }
+
+            return reader.read().then(processText);
+          })
         }).catch((error) => { });
       } else {
         const res = await fetch(path, chatPayload);
@@ -213,5 +256,15 @@ export class QianfanApi implements LLMApi {
 
   extractMessage(res: any) {
     return res.choices?.at(0)?.message?.content ?? "";
+  }
+}
+
+function getResult(resultText: string) {
+  const lines = resultText.split("\n");
+  for (const line of lines) {
+    if (line.startsWith("data:")) {
+      const data = JSON.parse(line.slice(5));
+      return data;
+    }
   }
 }

@@ -87,8 +87,6 @@ async function handle(
     // to disable nginx buffering
     newHeaders.set("X-Accel-Buffering", "no");
 
-    // console.log("res====>", res.body)
-
     return new Response(res.body, {
       status: res.status,
       statusText: res.statusText,

@@ -1,21 +1,13 @@
-import { getServerSideConfig } from "@/config/server";
-import { ModelProvider, QIANFAN_BASE_URL } from "@/constant";
-import { prettyObject } from "@/utils/format";
-import { NextRequest, NextResponse } from "next/server";
-import { auth } from "../../auth";
-
-import {
-  getTimestampString,
-  getQueryString,
-  getAuthString
-} from './util'
+import axios from 'axios';
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '../../auth';
+import { getServerSideConfig } from '@/config/server';
+import { ModelProvider, QIANFAN_BASE_URL } from '@/constant';
 
 async function handle(
   req: NextRequest,
   { params }: { params: { path: string[] } },
 ) {
-  console.log("[Qwen Route] params ", params);
-
   if (req.method === "OPTIONS") {
     return NextResponse.json({ body: "OK" }, { status: 200 });
   }
@@ -23,78 +15,72 @@ async function handle(
   const controller = new AbortController();
 
   const serverConfig = getServerSideConfig();
+  let baseUrl = QIANFAN_BASE_URL.startsWith("http") ? QIANFAN_BASE_URL : `https://${QIANFAN_BASE_URL}`;
+  baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash if exists
 
-  let baseUrl = QIANFAN_BASE_URL;
-  if (!baseUrl.startsWith("http")) {
-    baseUrl = `https://${baseUrl}`;
-  }
+  let path = req.nextUrl.pathname.replace("/api/qianfan/", "/");
 
-  if (baseUrl.endsWith("/")) {
-    baseUrl = baseUrl.slice(0, -1);
-  }
-
-  let path = `${req.nextUrl.pathname}`.replaceAll("/api/qianfan/", "");
-
-  console.log("[Proxy] ", path);
-  console.log("[Base Url]", baseUrl);
-
-  const timeoutId = setTimeout(
-    () => {
-      controller.abort();
-    },
-    10 * 60 * 1000,
-  );
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, 10 * 60 * 1000);
 
   const authResult = auth(req, ModelProvider.Qianfan);
 
-  console.log("[authResult] ", authResult)
   if (authResult.error) {
     return NextResponse.json(authResult, {
       status: 401,
     });
   }
 
-  const timestamp = getTimestampString();
-  const queryString = getQueryString(params);
-  const authrization = getAuthString(path, queryString, timestamp);
-
-  const fetchUrl = `${baseUrl}/${path}`;
+  const accessToken = await getAccessToken(serverConfig.qianfanAccess, serverConfig.qianfanSecret);
+  const fetchUrl = `${baseUrl}${path}?access_token=${accessToken?.access_token}`;
 
   const fetchOptions: RequestInit = {
     headers: {
-      "Authorization": authrization,
       "Content-Type": "application/json",
-      "Host": 'dasd',
-      "x-bce-date": timestamp
     },
     method: req.method,
     body: req.body,
     signal: controller.signal,
   };
-
-
   try {
-    const res = await fetch(fetchUrl, fetchOptions)
+    const response = await fetch(fetchUrl, fetchOptions)
+    // const response = await axios.post(fetchUrl, req.body, {
+    //   headers: {
+    //     'Content-Type': 'application/json'
+    //   },
+    //   signal: controller.signal,
+    //   responseType: "stream"
+    // });
 
-    // to prevent browser prompt for credentials
-    const newHeaders = new Headers(res.headers);
+    const newHeaders = new Headers(response.headers);
     newHeaders.delete("www-authenticate");
-    // to disable nginx buffering
     newHeaders.set("X-Accel-Buffering", "no");
 
-    // console.log("res====>", res.body)
-
-    return new Response(res.body, {
-      status: res.status,
-      statusText: res.statusText,
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
       headers: newHeaders,
     });
-  } catch (e) {
-    // console.error("[Qianfan] ", e);
-    return NextResponse.json(prettyObject(e));
+  } catch (error) {
+    console.error("[Qianfan] Request failed:", error);
+    return NextResponse.json({ error: "Request failed" }, { status: 500 });
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+async function getAccessToken(AK: string, SK: string) {
+  const url = `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${AK}&client_secret=${SK}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  return response.json();
 }
 
 export const GET = handle;
