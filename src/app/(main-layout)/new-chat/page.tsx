@@ -1,3 +1,4 @@
+"use client";
 import { useEffect, useRef, useState } from "react";
 import { redirect, useSearchParams } from 'next/navigation'
 import { Path, SlotID } from "@/constant";
