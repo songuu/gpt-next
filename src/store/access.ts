@@ -51,6 +51,9 @@ const DEFAULT_ACCESS_STATE = {
   sparkApiKey: '',
   sparkSecret: '',
 
+  // moonshot
+  moonshotApiKey: '',
+
   // server config
   needCode: true,
   hideUserApiKey: false,
@@ -95,6 +98,10 @@ export const useAccessStore = createPersistStore(
       return ensure(get(), ['sparkAppId', 'sparkApiKey', 'sparkSecret'])
     },
 
+    isValidMoonShot() {
+      return ensure(get(), ['moonshotApiKey'])
+    },
+
     isAuthorized() {
       this.fetch();
 
@@ -106,6 +113,7 @@ export const useAccessStore = createPersistStore(
         this.isValidAnthropic() ||
         this.isValidQwen() ||
         this.isValidSpark() ||
+        this.isValidMoonShot() ||
         !this.enabledAccessControl() ||
         (this.enabledAccessControl() && ensure(get(), ["accessCode"]))
       );

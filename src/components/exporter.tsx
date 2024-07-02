@@ -321,6 +321,8 @@ export function PreviewActions(props: {
       api = new ClientApi(ModelProvider.Spark);
     } else if (config.modelConfig.model.startsWith("ERNIE")) {
       api = new ClientApi(ModelProvider.Qianfan)
+    } else if (config.modelConfig.model.startsWith("moonshot")) {
+      api = new ClientApi(ModelProvider.Moonshot);
     } else if (identifyDefaultClaudeModel(config.modelConfig.model)) {
       api = new ClientApi(ModelProvider.Claude);
     } else {
@@ -554,7 +556,7 @@ export function ImagePreviewer(props: {
           <div>
             <div className={styles["main-title"]}>NextChat</div>
             <div className={styles["sub-title"]}>
-              github.com/Yidadaa/ChatGPT-Next-Web
+              github.com/songuu/gpt-next
             </div>
             <div className={styles["icons"]}>
               <ExportAvatar avatar={config.avatar} />

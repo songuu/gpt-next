@@ -45,6 +45,9 @@ declare global {
       SPARKAPPID?: string;
 
       SPARKSECRET?: string;
+
+      // moonshot
+      MOONSHOT_API_KEY?: string;
     }
   }
 }
@@ -102,6 +105,7 @@ export const getServerSideConfig = () => {
   const isQwen = !!process.env.QWEN_API_KEY;
   const isSpark = !!process.env.SPARK_API_KEY;
   const isQianfan = !!process.env.QIANFANACCESS;
+  const isMoonshot = !!process.env.MOONSHOT_API_KEY;
 
   // const apiKeyEnvVar = process.env.OPENAI_API_KEY ?? "";
   // const apiKeys = apiKeyEnvVar.split(",").map((v) => v.trim());
@@ -146,6 +150,10 @@ export const getServerSideConfig = () => {
     isQianfan,
     qianfanAccess: getApiKey(process.env.QIANFANACCESS),
     qianfanSecret: process.env.QIANFANSECRET || '',
+
+    isMoonshot,
+    moonshotApiKey: getApiKey(process.env.MOONSHOT_API_KEY),
+    moonshotUrl: process.env.MOONSHOT_URL,
 
     gtmId: process.env.GTM_ID,
 

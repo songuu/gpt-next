@@ -17,8 +17,6 @@ export default function Login({
     const password = formData.get("password") as string;
     const supabase = createClient();
 
-    console.log("dasd", supabase)
-
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,

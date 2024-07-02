@@ -103,7 +103,7 @@ const Markdown = dynamic(async () => (await import("@/components/markdown")).Mar
   loading: () => <LoadingIcon />,
 });
 
-export function SessionConfigModel(props: { onClose: () => void }) {
+function SessionConfigModel(props: { onClose: () => void }) {
   const chatStore = useChatStore();
   const session = chatStore.currentSession();
   const maskStore = useMaskStore();

@@ -109,12 +109,17 @@ class SparkApi implements LLMApi {
   }
 
   private async connect() {
+    console.log("useAppConfig======>", useAppConfig)
+    if (!useAppConfig) return
     this.resetData();
-    this.configs = await this.fetchConfig();
     const modelConfig = {
       ...useAppConfig.getState().modelConfig,
       ...useChatStore.getState().currentSession().mask.modelConfig,
     };
+    if (!modelConfig.model.startsWith('ERNIE-')) return
+
+    this.configs = await this.fetchConfig();
+
     const url = await this.generateSocketUrl(modelConfig.model);
 
     this.socket = 'WebSocket' in window ? new WebSocket(url) : 'MozWebSocket' in window ? new MozWebSocket(url) : null;

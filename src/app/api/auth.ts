@@ -84,6 +84,9 @@ export function auth(req: NextRequest, modelProvider: ModelProvider) {
       case ModelProvider.Qianfan:
         systemApiKey = '';
         break;
+      case ModelProvider.Moonshot:
+        systemApiKey = serverConfig.moonshotApiKey;
+        break;
       case ModelProvider.GPT:
       default:
         if (serverConfig.isAzure) {

@@ -11,6 +11,7 @@ import { ClaudeApi } from "./platforms/anthropic";
 import { QwenApi } from "./platforms/qwen";
 import { SparkApiIns } from "./platforms/spark";
 import { QianfanApi } from "./platforms/qianfan";
+import { MoonshotApi } from "./platforms/moonshot";
 export const ROLES = ["system", "user", "assistant"] as const;
 export type MessageRole = (typeof ROLES)[number];
 
@@ -115,6 +116,9 @@ export class ClientApi {
       case ModelProvider.Qianfan:
         this.llm = new QianfanApi();
         break;
+      case ModelProvider.Moonshot:
+        this.llm = new MoonshotApi();
+        break;
       default:
         this.llm = new ChatGPTApi();
         break;
@@ -133,13 +137,6 @@ export class ClientApi {
         from: m.role === "user" ? "human" : "gpt",
         value: m.content,
       }))
-    // .concat([
-    //   {
-    //     from: "human",
-    //     value:
-    //       "Share from [NextChat]: https://github.com/Yidadaa/ChatGPT-Next-Web",
-    //   },
-    // ]);
 
     console.log("[Share]", messages, msgs);
     const clientConfig = getClientConfig();
@@ -181,6 +178,7 @@ export function getHeaders() {
   const isQwen = accessStore.provider === ServiceProvider.Qwen;
   const isSpark = accessStore.provider === ServiceProvider.Spark;
   const isQianfan = accessStore.provider === ServiceProvider.Qianfan;
+  const isMoonshot = accessStore.provider === ServiceProvider.Moonshot;
   const authHeader = isAzure ? "api-key" : isQwen ? "api_key" : "Authorization";
   let apiKey: string = accessStore.openaiApiKey;
   switch (true) {
@@ -195,6 +193,9 @@ export function getHeaders() {
       break;
     case isSpark:
       apiKey = accessStore.sparkApiKey;
+      break;
+    case isMoonshot:
+      apiKey = accessStore.moonshotApiKey;
       break;
     default:
       break;

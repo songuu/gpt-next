@@ -1,9 +1,9 @@
 version: "3.9"
 services:
-  chatgpt-next-web:
+  gpt-next:
     profiles: [ "no-proxy" ]
-    container_name: chatgpt-next-web
-    image: yidadaa/chatgpt-next-web
+    container_name: gpt-next
+    image: gpt-next
     ports:
       - 3000:3000
     environment:
@@ -17,11 +17,20 @@ services:
       - ENABLE_BALANCE_QUERY=$ENABLE_BALANCE_QUERY
       - DISABLE_FAST_LINK=$DISABLE_FAST_LINK
       - OPENAI_SB=$OPENAI_SB
+      - QWEN_API_KEY=$QWEN_API_KEY
+      - QWEN_URL=$QWEN_URL
+      - SPARK_API_KEY=$SPARK_API_KEY
+      - SPARKAPPID=$SPARKAPPID
+      - SPARKSECRET=$SPARKSECRET
+      - QIANFANACCESS=$QIANFANACCESS
+      - QIANFANSECRET=QIANFANSECRET
+      - MOONSHOTKEY=MOONSHOTKEY
+      - MOONSHOT_URL=MOONSHOT_URL
 
-  chatgpt-next-web-proxy:
+  gpt-next-proxy:
     profiles: [ "proxy" ]
-    container_name: chatgpt-next-web-proxy
-    image: yidadaa/chatgpt-next-web
+    container_name: gpt-next-proxy
+    image: gpt-next
     ports:
       - 3000:3000
     environment:
@@ -36,3 +45,12 @@ services:
       - ENABLE_BALANCE_QUERY=$ENABLE_BALANCE_QUERY
       - DISABLE_FAST_LINK=$DISABLE_FAST_LINK
       - OPENAI_SB=$OPENAI_SB
+      - QWEN_API_KE=$QWEN_API_KEY
+      - QWEN_URL=$QWEN_URL
+      - SPARK_API_KEY=$SPARK_API_KEY
+      - SPARKAPPID=$SPARKAPPID
+      - SPARKSECRET=$SPARKSECRET
+      - QIANFANACCESS=$QIANFANACCESS
+      - QIANFANSECRET=$QIANFANSECRET
+      - MOONSHOTKEY=$MOONSHOTKEY
+      - MOONSHOT_URL=$MOONSHOT_URL

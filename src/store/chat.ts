@@ -408,6 +408,8 @@ export const useChatStore = createPersistStore(
           api = new ClientApi(ModelProvider.Spark);
         } else if (modelConfig.model.startsWith("ERNIE")) {
           api = new ClientApi(ModelProvider.Qianfan)
+        } else if (modelConfig.model.startsWith("moonshot")) {
+          api = new ClientApi(ModelProvider.Moonshot);
         } else {
           api = new ClientApi(ModelProvider.GPT);
         }
@@ -599,6 +601,8 @@ export const useChatStore = createPersistStore(
           api = new ClientApi(ModelProvider.Spark);
         } else if (modelConfig.model.startsWith("ERNIE")) {
           api = new ClientApi(ModelProvider.Qianfan)
+        } else if (config.modelConfig.model.startsWith("moonshot")) {
+          api = new ClientApi(ModelProvider.Moonshot);
         } else if (identifyDefaultClaudeModel(modelConfig.model)) {
           api = new ClientApi(ModelProvider.Claude);
         } else {

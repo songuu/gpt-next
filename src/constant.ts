@@ -1,5 +1,5 @@
 export const OWNER = "songuu";
-export const REPO = "ChatGPT-Next-Web";
+export const REPO = "gpt-next";
 export const REPO_URL = `https://github.com/${OWNER}/${REPO}`;
 export const ISSUE_URL = `https://github.com/${OWNER}/${REPO}/issues`;
 export const UPDATE_URL = `${REPO_URL}#keep-updated`;
@@ -19,6 +19,8 @@ export const QWEN_BASE_URL = "https://dashscope.aliyuncs.com/"
 export const SPARK_BASE_URL = "spark-api.xf-yun.com";
 
 export const QIANFAN_BASE_URL = 'https://aip.baidubce.com'
+
+export const MOONSHOT_BASE_URL = "https://api.moonshot.cn"
 
 export enum Path {
   Home = "/",
@@ -45,7 +47,8 @@ export enum ApiPath {
   Anthropic = "/api/anthropic",
   Qwen = '/api/qwen',
   Spark = '/api/spark',
-  Qianfan = '/api/qianfan'
+  Qianfan = '/api/qianfan',
+  Moonshot = '/api/moonshot'
 }
 
 export enum SlotID {
@@ -78,7 +81,7 @@ export const ACCESS_CODE_PREFIX = "nk-";
 export const LAST_INPUT_KEY = "last-input";
 export const UNFINISHED_INPUT = (id: string) => "unfinished-input-" + id;
 
-export const STORAGE_KEY = "chatgpt-next-web";
+export const STORAGE_KEY = "gpt-next";
 
 export const REQUEST_TIMEOUT_MS = 60000;
 
@@ -91,7 +94,8 @@ export enum ServiceProvider {
   Anthropic = "Anthropic",
   Qwen = "Qwen",
   Spark = "Spark",
-  Qianfan = "Qianfan"
+  Qianfan = "Qianfan",
+  Moonshot = "Moonshot"
 }
 
 export enum ModelProvider {
@@ -100,7 +104,8 @@ export enum ModelProvider {
   Claude = "Claude",
   Qwen = "Qwen",
   Spark = "Spark",
-  Qianfan = "Qianfan"
+  Qianfan = "Qianfan",
+  Moonshot = "Moonshot"
 }
 
 export const Anthropic = {
@@ -134,6 +139,11 @@ export const Qwen = {
 export const Spark = {
   ExampleEndpoint: "wss://spark-api.xf-yun.com",
   ChatPath: ''
+}
+
+export const Moonshot = {
+  ExampleEndpoint: '',
+  ChatPath: 'v1/chat/completions'
 }
 
 export const DEFAULT_INPUT_TEMPLATE = `{{input}}`; // input / time / model / lang
@@ -258,6 +268,12 @@ export const qianfanModelsPaths: Record<string, string> = {
   'ERNIE-3.5-128K': '/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-3.5-128k'
 }
 
+export const moonshotModels = [
+  'moonshot-v1-8k',
+  'moonshot-v1-32k',
+  'moonshot-v1-128k'
+]
+
 export const DEFAULT_MODELS = [
   ...openaiModels.map((name) => ({
     name,
@@ -311,6 +327,15 @@ export const DEFAULT_MODELS = [
       id: "qianfan",
       providerName: "Qianfan",
       providerType: "qianfan"
+    }
+  })),
+  ...moonshotModels.map(name => ({
+    name,
+    available: true,
+    provider: {
+      id: 'moonshot',
+      providerName: "Moonshot",
+      providerType: "moonshot"
     }
   }))
 ] as const;
