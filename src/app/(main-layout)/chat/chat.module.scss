@@ -280,7 +280,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  height: 100%;
+  height: calc(100% - 60px);
 }
 
 .chat-body {
@@ -459,7 +459,7 @@
     width: $calc-image-width;
     height: $calc-image-width;
   }
-  
+
   .chat-message-item-image {
     max-width: calc(100vw/3*2);
   }

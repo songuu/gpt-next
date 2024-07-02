@@ -16,13 +16,13 @@ export function IconButton(props: {
   disabled?: boolean;
   tabIndex?: number;
   autoFocus?: boolean;
+  children?: React.ReactNode;
 }) {
   return (
     <button
       className={
         styles["icon-button"] +
-        ` ${props.bordered && styles.border} ${props.shadow && styles.shadow} ${
-          props.className ?? ""
+        ` ${props.bordered && styles.border} ${props.shadow && styles.shadow} ${props.className ?? ""
         } clickable ${styles[props.type ?? ""]}`
       }
       onClick={props.onClick}
@@ -46,6 +46,8 @@ export function IconButton(props: {
       {props.text && (
         <div className={styles["icon-button-text"]}>{props.text}</div>
       )}
+
+      {props.children}
     </button>
   );
 }

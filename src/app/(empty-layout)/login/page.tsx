@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/utils/supabase/server";
 import { SubmitButton } from "./submit-button";
 import { IconButton } from "@/components/button";
+import { OauthSignIn } from '@/components/oauth-sign-in'
 
 export default function Login({
   searchParams,
@@ -88,6 +89,7 @@ export default function Login({
         >
           Sign Up
         </SubmitButton>
+        <OauthSignIn />
         {searchParams?.message && (
           <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
             {searchParams.message}
