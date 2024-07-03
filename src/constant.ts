@@ -22,6 +22,8 @@ export const QIANFAN_BASE_URL = 'https://aip.baidubce.com'
 
 export const MOONSHOT_BASE_URL = "https://api.moonshot.cn"
 
+export const DEFAULT_PATH = 'http://localhost:3000'
+
 export enum Path {
   Home = "/",
   Chat = "/chat",

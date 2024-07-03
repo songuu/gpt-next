@@ -5,6 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { SubmitButton } from "./submit-button";
 import { IconButton } from "@/components/button";
 import { OauthSignIn } from '@/components/oauth-sign-in'
+import Separator from '@/components/separator'
 
 export default function Login({
   searchParams,
@@ -89,13 +90,14 @@ export default function Login({
         >
           Sign Up
         </SubmitButton>
-        <OauthSignIn />
         {searchParams?.message && (
           <p className="mt-4 p-4 bg-foreground/10 text-foreground text-center">
             {searchParams.message}
           </p>
         )}
       </form>
+      <Separator text="三方登录" />
+      <OauthSignIn />
       <Link
         href="/">
         <IconButton text="back" className="bg-green-700 rounded-md px-4 py-2 text-foreground mb-2 w-full" />

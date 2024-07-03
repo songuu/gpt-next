@@ -144,8 +144,6 @@ export function Screen({
 export function useLoadData() {
   const config = useAppConfig();
 
-  console.log("config.modelConfig.model", config.modelConfig.model)
-
   var api: ClientApi;
   if (config.modelConfig.model.startsWith("gemini")) {
     api = new ClientApi(ModelProvider.GeminiPro);

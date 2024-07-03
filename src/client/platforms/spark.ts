@@ -109,49 +109,50 @@ class SparkApi implements LLMApi {
   }
 
   private async connect() {
-    console.log("useAppConfig======>", useAppConfig)
-    if (!useAppConfig) return
-    this.resetData();
-    const modelConfig = {
-      ...useAppConfig.getState().modelConfig,
-      ...useChatStore.getState().currentSession().mask.modelConfig,
-    };
-    if (!modelConfig.model.startsWith('ERNIE-')) return
-
-    this.configs = await this.fetchConfig();
-
-    const url = await this.generateSocketUrl(modelConfig.model);
-
-    this.socket = 'WebSocket' in window ? new WebSocket(url) : 'MozWebSocket' in window ? new MozWebSocket(url) : null;
-    if (!this.socket) {
-      alert('Browser does not support WebSocket');
-      return;
-    }
-
-    this.socket.onerror = (e) => {
-      console.error("WebSocket error:", e);
-      this.handleSocketError();
-    };
-
-    this.socket.onopen = () => {
-      console.log("WebSocket open");
-      this.reconnectAttempts = 0;
-      // const recentMessages = useChatStore.getState().getMessagesWithMemory();
-      // this.chat({
-      //   messages: recentMessages,
-      //   config: { ...modelConfig, stream: true },
-      // });
-      this.animateResponseText();
-      this.processMessageQueue();  // 处理消息队列
-    };
-
-    this.socket.onclose = () => {
-      console.log("WebSocket close");
+    try {
       this.resetData();
-      this.handleSocketError();
-    };
+      const modelConfig = {
+        ...useAppConfig.getState().modelConfig,
+        ...useChatStore.getState().currentSession().mask.modelConfig,
+      };
+      if (!modelConfig.model.startsWith('ERNIE-')) return
 
-    this.socket.onmessage = (e: any) => this.onMessage(e);
+      this.configs = await this.fetchConfig();
+
+      const url = await this.generateSocketUrl(modelConfig.model);
+
+      this.socket = 'WebSocket' in window ? new WebSocket(url) : 'MozWebSocket' in window ? new MozWebSocket(url) : null;
+      if (!this.socket) {
+        alert('Browser does not support WebSocket');
+        return;
+      }
+
+      this.socket.onerror = (e) => {
+        console.error("WebSocket error:", e);
+        this.handleSocketError();
+      };
+
+      this.socket.onopen = () => {
+        console.log("WebSocket open");
+        this.reconnectAttempts = 0;
+        // const recentMessages = useChatStore.getState().getMessagesWithMemory();
+        // this.chat({
+        //   messages: recentMessages,
+        //   config: { ...modelConfig, stream: true },
+        // });
+        this.animateResponseText();
+        this.processMessageQueue();  // 处理消息队列
+      };
+
+      this.socket.onclose = () => {
+        console.log("WebSocket close");
+        this.resetData();
+        this.handleSocketError();
+      };
+
+      this.socket.onmessage = (e: any) => this.onMessage(e);
+    } catch (err) {
+    }
   }
 
   private handleSocketError() {

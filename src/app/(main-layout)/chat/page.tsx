@@ -1047,53 +1047,53 @@ function _Chat() {
   const autoFocus = !isMobileScreen; // wont auto focus on mobile screen
   const showMaxIcon = !isMobileScreen && !clientConfig?.isApp;
 
-  useCommand({
-    fill: setUserInput,
-    submit: (text) => {
-      doSubmit(text);
-    },
-    code: (text) => {
-      if (accessStore.disableFastLink) return;
-      console.log("[Command] got code from url: ", text);
-      showConfirm(Locale.URLCommand.Code + `code = ${text}`).then((res) => {
-        if (res) {
-          accessStore.update((access) => (access.accessCode = text));
-        }
-      });
-    },
-    settings: (text) => {
-      if (accessStore.disableFastLink) return;
+  // useCommand({
+  //   fill: setUserInput,
+  //   submit: (text) => {
+  //     doSubmit(text);
+  //   },
+  //   code: (text) => {
+  //     if (accessStore.disableFastLink) return;
+  //     console.log("[Command] got code from url: ", text);
+  //     showConfirm(Locale.URLCommand.Code + `code = ${text}`).then((res) => {
+  //       if (res) {
+  //         accessStore.update((access) => (access.accessCode = text));
+  //       }
+  //     });
+  //   },
+  //   settings: (text) => {
+  //     if (accessStore.disableFastLink) return;
 
-      try {
-        const payload = JSON.parse(text) as {
-          key?: string;
-          url?: string;
-        };
+  //     try {
+  //       const payload = JSON.parse(text) as {
+  //         key?: string;
+  //         url?: string;
+  //       };
 
-        console.log("[Command] got settings from url: ", payload);
+  //       console.log("[Command] got settings from url: ", payload);
 
-        if (payload.key || payload.url) {
-          showConfirm(
-            Locale.URLCommand.Settings +
-            `\n${JSON.stringify(payload, null, 4)}`,
-          ).then((res) => {
-            if (!res) return;
-            if (payload.key) {
-              accessStore.update(
-                (access) => (access.openaiApiKey = payload.key!),
-              );
-            }
-            if (payload.url) {
-              accessStore.update((access) => (access.openaiUrl = payload.url!));
-            }
-            accessStore.update((access) => (access.useCustomConfig = true));
-          });
-        }
-      } catch {
-        console.error("[Command] failed to get settings from url: ", text);
-      }
-    },
-  });
+  //       if (payload.key || payload.url) {
+  //         showConfirm(
+  //           Locale.URLCommand.Settings +
+  //           `\n${JSON.stringify(payload, null, 4)}`,
+  //         ).then((res) => {
+  //           if (!res) return;
+  //           if (payload.key) {
+  //             accessStore.update(
+  //               (access) => (access.openaiApiKey = payload.key!),
+  //             );
+  //           }
+  //           if (payload.url) {
+  //             accessStore.update((access) => (access.openaiUrl = payload.url!));
+  //           }
+  //           accessStore.update((access) => (access.useCustomConfig = true));
+  //         });
+  //       }
+  //     } catch {
+  //       console.error("[Command] failed to get settings from url: ", text);
+  //     }
+  //   },
+  // });
 
   // edit / insert message modal
   const [isEditingMessage, setIsEditingMessage] = useState(false);
